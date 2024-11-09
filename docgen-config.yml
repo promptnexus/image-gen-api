@@ -1,0 +1,39 @@
+# spectaql-config.yml
+introspection:
+  url: http://localhost:8000/
+  headers:
+    X-API-Key: 'sk_test_123'
+
+spectaql:
+  logoFile: ./logo.png
+  themeDir: ./theme
+  targetDir: ./generated-docs
+
+info:
+  title: Image Generation API
+  description: GraphQL API for AI image generation
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: http://localhost:8000
+    description: Development
+
+headers:
+  - name: X-API-Key
+    required: true
+    description: Your API key for authentication
+    example: sk_test_123
+
+introspection:
+  removeTrailingPeriodFromDescriptions: false
+  schemaFile: ./schema.graphql
+  queryNameStrategy: capitalizeFirst
+  fieldExpansionDepth: 2
+
+extensions:
+  graphqlScalarExamples: true

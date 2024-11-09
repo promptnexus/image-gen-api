@@ -1,0 +1,42 @@
+schema: http://localhost:8000/graphql
+documents: "./src/**/*.graphql"
+generates:
+  python-sdk/:
+    preset: client
+    plugins:
+      - python
+      - python-operations
+    config:
+      clientType: async
+      strictTypes: true
+
+  typescript-sdk/:
+    preset: client
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-graphql-request
+    config:
+      strictNullChecks: true
+      enumsAsTypes: true
+
+  go-sdk/:
+    preset: client
+    plugins:
+      - go
+      - go-operations
+    config:
+      packageName: imageclient
+
+  java-sdk/:
+    preset: client
+    plugins:
+      - java
+      - java-apollo
+    config:
+      packageName: com.example.imageclient
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write
+    - eslint --fix

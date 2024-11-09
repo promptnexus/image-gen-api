@@ -1,0 +1,22 @@
+query HealthCheck {
+  health
+}
+
+mutation GenerateImages($input: ImageGenerationInput!) {
+  generateImages(input: $input) {
+    success
+    results {
+      id
+      url
+      createdAt
+      prompt
+      format
+      size
+      style
+    }
+    error {
+      message
+      code
+    }
+  }
+}

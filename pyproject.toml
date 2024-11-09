@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "image-generation-api"
+version = "0.1.0"
+description = "GraphQL API for AI image generation"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.104.0"
+strawberry-graphql = "^0.211.1"
+uvicorn = "^0.23.2"
+pydantic = "^2.4.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+black = "^23.10.1"
+isort = "^5.12.0"
+mypy = "^1.6.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
