@@ -43,7 +43,7 @@ mutation GenerateImages($input: ImageGenerationInput!) {
     prompt: "a beautiful sunset"
     size: LARGE
     style: PHOTOREALISTIC
-    format: PNG
+    image_format: PNG
     numImages: 1
   }) {
     success

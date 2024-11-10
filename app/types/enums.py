@@ -4,9 +4,9 @@ import strawberry
 
 @strawberry.enum
 class ImageFormat(Enum):
-    PNG = "png"
-    JPEG = "jpeg"
-    WEBP = "webp"
+    PNG = "PNG"
+    JPEG = "JPEG"
+    WEBP = "WEBP"
 
 
 @strawberry.enum

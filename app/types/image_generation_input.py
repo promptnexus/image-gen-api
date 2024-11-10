@@ -8,7 +8,7 @@ from app.types.scalars import PromptString, ImageCount
 @strawberry.input
 class ImageGenerationInput:
     prompt: PromptString
-    format: ImageFormat = ImageFormat.PNG
+    image_format: ImageFormat = ImageFormat.PNG
     width: Optional[int] = 512
     height: Optional[int] = 512
     style: ImageStyle = ImageStyle.PHOTOREALISTIC

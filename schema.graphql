@@ -14,7 +14,7 @@ type ImageGenerationError {
 
 input ImageGenerationInput {
   prompt: PromptString!
-  format: ImageFormat! = PNG
+  imageFormat: ImageFormat! = PNG
   width: Int = 512
   height: Int = 512
   style: ImageStyle! = PHOTOREALISTIC
@@ -38,7 +38,7 @@ type ImageGenerationResult {
   imageBase64: String!
   createdAt: String!
   prompt: String!
-  format: ImageFormat!
+  imageFormat: ImageFormat!
   width: Int!
   height: Int!
   style: ImageStyle!
@@ -61,11 +61,11 @@ enum ModelType {
 
 type Mutation {
   """Generate one or more images based on the provided prompt and options"""
-  generateImages(input: ImageGenerationInput!): ImageGenerationResponse!
+  generateImages(imageGenInput: ImageGenerationInput!): ImageGenerationResponse!
   message: String!
   code: String!
   prompt: PromptString!
-  format: ImageFormat!
+  imageFormat: ImageFormat!
   width: Int
   height: Int
   style: ImageStyle!

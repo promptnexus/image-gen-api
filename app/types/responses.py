@@ -9,7 +9,7 @@ class ImageGenerationResult:
     image_base64: str
     created_at: str
     prompt: str
-    format: ImageFormat
+    image_format: ImageFormat
     width: int
     height: int
     style: ImageStyle
