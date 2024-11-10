@@ -1,21 +1,22 @@
-from typing import Optional
+from app.services.image_generator import ImageGenerationService
 import strawberry
 from strawberry.types import Info
 
-from app.types.inputs import ImageGenerationInput
+from app.types.image_generation_input import ImageGenerationInput
 from app.types.responses import (
     ImageGenerationResponse,
     ImageGenerationResult,
     ImageGenerationError,
 )
-from app.services.image import generate_image
-
 from datetime import datetime
 import uuid
 
 
 @strawberry.type
-class Mutation:
+class GenerateImageMutations:
+    def __init__(self):
+        self.image_service = ImageGenerationService()
+
     @strawberry.mutation(
         description="Generate one or more images based on the provided prompt and options"
     )
@@ -27,8 +28,12 @@ class Mutation:
             # Generate images
             results = []
             for _ in range(input.num_images):
-                url = await generate_image(
-                    input.prompt, input.format, input.size, input.style
+                url = await self.image_service.generate(
+                    model_type=input.model_type,
+                    prompt=input.prompt,
+                    width=input.width,
+                    height=input.height,
+                    num_inference_steps=input.num_inference_steps,
                 )
 
                 results.append(
@@ -38,7 +43,8 @@ class Mutation:
                         created_at=datetime.utcnow().isoformat(),
                         prompt=input.prompt,
                         format=input.format,
-                        size=input.size,
+                        width=input.width,
+                        height=input.height,
                         style=input.style,
                     )
                 )

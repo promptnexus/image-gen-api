@@ -1,6 +1,6 @@
 from typing import Optional, List
 import strawberry
-from .enums import ImageFormat, ImageSize, ImageStyle
+from .enums import ImageFormat, ImageStyle
 
 
 @strawberry.type
@@ -10,7 +10,8 @@ class ImageGenerationResult:
     created_at: str
     prompt: str
     format: ImageFormat
-    size: ImageSize
+    width: int
+    height: int
     style: ImageStyle
 
 

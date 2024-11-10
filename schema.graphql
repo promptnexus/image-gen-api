@@ -15,11 +15,16 @@ type ImageGenerationError {
 input ImageGenerationInput {
   prompt: PromptString!
   format: ImageFormat! = PNG
-  size: ImageSize! = MEDIUM
+  width: Int = 512
+  height: Int = 512
   style: ImageStyle! = PHOTOREALISTIC
 
   """Number of images to generate"""
   numImages: ImageCount! = 1
+
+  """Type of model to use for image generation"""
+  modelType: ModelType! = STABLE_V2_1
+  numInferenceSteps: Int = 50
 }
 
 type ImageGenerationResponse {
@@ -34,14 +39,9 @@ type ImageGenerationResult {
   createdAt: String!
   prompt: String!
   format: ImageFormat!
-  size: ImageSize!
+  width: Int!
+  height: Int!
   style: ImageStyle!
-}
-
-enum ImageSize {
-  SMALL
-  MEDIUM
-  LARGE
 }
 
 enum ImageStyle {
@@ -51,25 +51,37 @@ enum ImageStyle {
   ABSTRACT
 }
 
+enum ModelType {
+  STABLE_V1_4
+  STABLE_V1_5
+  STABLE_V2_1
+  FLUX_1_DEV
+  FLUX_1_SCHNELL
+}
+
 type Mutation {
+  """Generate one or more images based on the provided prompt and options"""
+  generateImages(input: ImageGenerationInput!): ImageGenerationResponse!
   message: String!
   code: String!
   prompt: PromptString!
   format: ImageFormat!
-  size: ImageSize!
+  width: Int
+  height: Int
   style: ImageStyle!
 
   """Number of images to generate"""
   numImages: ImageCount!
+
+  """Type of model to use for image generation"""
+  modelType: ModelType!
+  numInferenceSteps: Int
   success: Boolean!
   results: [ImageGenerationResult!]
   error: ImageGenerationError
   id: String!
   url: String!
   createdAt: String!
-
-  """Generate one or more images based on the provided prompt and options"""
-  generateImages(input: ImageGenerationInput!): ImageGenerationResponse!
 }
 
 """A string between 3 and 1000 characters for image generation prompts"""

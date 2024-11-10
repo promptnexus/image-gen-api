@@ -9,6 +9,11 @@ import subprocess
 from app.schema import schema
 from app.services.auth import get_context
 
+from dotenv import load_dotenv  # Add this import
+
+# Load .env file at startup
+load_dotenv()  # Add this line
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
