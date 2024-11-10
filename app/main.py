@@ -17,40 +17,25 @@ async def lifespan(app: FastAPI):
         Path("schema.graphql").write_text(str(schema))
         Path("generated-docs").mkdir(exist_ok=True)
         try:
-            subprocess.run(["spectaql", "spectaql-config.yml"], check=True)
+            if (
+                subprocess.run(
+                    ["spectaql", "spectaql-config.yml"], shell=True, check=True
+                ).returncode
+                != 0
+            ):
+                raise RuntimeError("Spectaql command failed")
             app.mount(
-                "/docs", StaticFiles(directory="generated-docs", html=True), name="docs"
+                "/docs",
+                StaticFiles(directory="generated-docs", html=True),
+                name="docs",
             )
+
+            print("mounted docs")
         except FileNotFoundError:
             print("Spectaql not installed")
     except Exception as e:
         print(f"Documentation generation failed: {e}")
     yield
-
-
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     """Handle startup and shutdown events"""
-#     try:
-#         # On startup: Generate docs
-#         schema_path = Path("schema.graphql")
-#         with open(schema_path, "w") as f:
-#             f.write(str(schema))
-
-#         subprocess.run(["spectaql", "spectaql-config.yml"], check=True)
-
-#         # Mount docs if generation succeeded
-#         if Path("generated-docs").exists():
-#             app.mount(
-#                 "/docs", StaticFiles(directory="generated-docs", html=True), name="docs"
-#             )
-#     except Exception as e:
-#         print(f"Documentation generation failed: {e}")
-
-#     yield  # Server runs here
-
-#     # On shutdown: Cleanup if needed
-#     pass
 
 
 # Create FastAPI app
@@ -59,6 +44,8 @@ app = FastAPI(
     description="GraphQL API for generating images with various styles and options",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
 )
 
 # Create GraphQL app
