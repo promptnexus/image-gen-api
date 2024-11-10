@@ -20,7 +20,7 @@ A GraphQL API service for generating AI images with custom styles, sizes, and fo
 poetry install
 
 # Start the server
-poetry run python -m app.main
+poetry run python app/main.py
 
 # Server runs at http://localhost:8000
 # Documentation at http://localhost:8000/docs
