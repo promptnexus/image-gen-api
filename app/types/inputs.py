@@ -1,6 +1,7 @@
 import strawberry
-from .enums import ImageFormat, ImageSize, ImageStyle
-from .scalars import PromptString, ImageCount
+
+from app.types.enums import ImageFormat, ImageSize, ImageStyle
+from app.types.scalars import PromptString, ImageCount
 
 
 @strawberry.input

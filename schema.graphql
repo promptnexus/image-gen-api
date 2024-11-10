@@ -1,0 +1,65 @@
+"""Number of images to generate (between 1 and 4)"""
+scalar ImageCount
+
+enum ImageFormat {
+  PNG
+  JPEG
+  WEBP
+}
+
+type ImageGenerationError {
+  message: String!
+  code: String!
+}
+
+input ImageGenerationInput {
+  prompt: PromptString!
+  format: ImageFormat! = PNG
+  size: ImageSize! = MEDIUM
+  style: ImageStyle! = PHOTOREALISTIC
+
+  """Number of images to generate"""
+  numImages: ImageCount! = 1
+}
+
+type ImageGenerationResponse {
+  success: Boolean!
+  results: [ImageGenerationResult!]
+  error: ImageGenerationError
+}
+
+type ImageGenerationResult {
+  id: String!
+  url: String!
+  createdAt: String!
+  prompt: String!
+  format: ImageFormat!
+  size: ImageSize!
+  style: ImageStyle!
+}
+
+enum ImageSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ImageStyle {
+  PHOTOREALISTIC
+  ARTISTIC
+  CARTOON
+  ABSTRACT
+}
+
+type Mutation {
+  """Generate one or more images based on the provided prompt and options"""
+  generateImages(input: ImageGenerationInput!): ImageGenerationResponse!
+}
+
+"""A string between 3 and 1000 characters for image generation prompts"""
+scalar PromptString
+
+type Query {
+  """Check if the API is healthy"""
+  health: String!
+}

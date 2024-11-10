@@ -1,7 +1,7 @@
 from datetime import datetime
 import uuid
 import asyncio
-from ..types.enums import ImageFormat, ImageSize, ImageStyle
+from app.types.enums import ImageFormat, ImageSize, ImageStyle
 
 
 async def generate_image(

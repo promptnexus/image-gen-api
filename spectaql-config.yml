@@ -1,8 +1,11 @@
 # spectaql-config.yml
 introspection:
-  url: http://localhost:8000/
   headers:
     X-API-Key: 'sk_test_123'
+  removeTrailingPeriodFromDescriptions: false
+  schemaFile: ./schema.graphql
+  queryNameStrategy: capitalizeFirst
+  fieldExpansionDepth: 2
 
 spectaql:
   logoFile: ./logo.png
@@ -28,12 +31,6 @@ headers:
     required: true
     description: Your API key for authentication
     example: sk_test_123
-
-introspection:
-  removeTrailingPeriodFromDescriptions: false
-  schemaFile: ./schema.graphql
-  queryNameStrategy: capitalizeFirst
-  fieldExpansionDepth: 2
 
 extensions:
   graphqlScalarExamples: true

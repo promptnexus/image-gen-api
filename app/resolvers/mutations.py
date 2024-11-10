@@ -1,13 +1,15 @@
 from typing import Optional
 import strawberry
 from strawberry.types import Info
-from ..types.inputs import ImageGenerationInput
-from ..types.responses import (
+
+from app.types.inputs import ImageGenerationInput
+from app.types.responses import (
     ImageGenerationResponse,
     ImageGenerationResult,
     ImageGenerationError,
 )
-from ..services.image import generate_image
+from app.services.image import generate_image
+
 from datetime import datetime
 import uuid
 

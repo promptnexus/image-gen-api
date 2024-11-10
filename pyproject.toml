@@ -3,6 +3,9 @@ name = "image-generation-api"
 version = "0.1.0"
 description = "GraphQL API for AI image generation"
 authors = ["Your Name <your.email@example.com>"]
+packages = [
+    { include = "app" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
