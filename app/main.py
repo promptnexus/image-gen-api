@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from strawberry.fastapi import GraphQLRouter
@@ -19,7 +20,7 @@ async def lifespan(app: FastAPI):
         try:
             if (
                 subprocess.run(
-                    ["spectaql", "spectaql-config.yml"], shell=True, check=True
+                    "spectaql spectaql-config.yml", shell=True, check=True
                 ).returncode
                 != 0
             ):
@@ -48,9 +49,19 @@ app = FastAPI(
     redoc_url=None,
 )
 
-# Create GraphQL app
-graphql_app = GraphQLRouter(schema, context_getter=get_context)
 
+async def dev_context():
+    """Development context with no auth"""
+    return {}
+
+
+# Choose context based on environment
+context_getter = dev_context if os.getenv("DISABLE_AUTH") else get_context
+
+# Create GraphQL app
+graphql_app = GraphQLRouter(schema, context_getter=get_context, graphiql=True)
+
+app.include_router(graphql_app, prefix="/graphql")  # GraphQL endpoint
 app.add_route("/", graphql_app)
 
 

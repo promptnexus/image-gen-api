@@ -52,6 +52,22 @@ enum ImageStyle {
 }
 
 type Mutation {
+  message: String!
+  code: String!
+  prompt: PromptString!
+  format: ImageFormat!
+  size: ImageSize!
+  style: ImageStyle!
+
+  """Number of images to generate"""
+  numImages: ImageCount!
+  success: Boolean!
+  results: [ImageGenerationResult!]
+  error: ImageGenerationError
+  id: String!
+  url: String!
+  createdAt: String!
+
   """Generate one or more images based on the provided prompt and options"""
   generateImages(input: ImageGenerationInput!): ImageGenerationResponse!
 }
@@ -62,4 +78,5 @@ scalar PromptString
 type Query {
   """Check if the API is healthy"""
   health: String!
+  users: [String!]!
 }
