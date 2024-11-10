@@ -164,4 +164,5 @@ generated-docs/
 
 # macOS
 .DS_Store
-**/.DS_Store.env
+**/.DS_Store
+.env

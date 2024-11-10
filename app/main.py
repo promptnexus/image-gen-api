@@ -59,7 +59,7 @@ async def dev_context():
 context_getter = dev_context if os.getenv("DISABLE_AUTH") else get_context
 
 # Create GraphQL app
-graphql_app = GraphQLRouter(schema, context_getter=get_context, graphiql=True)
+graphql_app = GraphQLRouter(schema, context_getter=context_getter, graphiql=True)
 
 app.include_router(graphql_app, prefix="/graphql")  # GraphQL endpoint
 app.add_route("/", graphql_app)
