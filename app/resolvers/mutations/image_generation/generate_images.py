@@ -16,9 +16,6 @@ import base64
 
 @strawberry.type
 class GenerateImageMutations:
-    # def __init__(self):
-    #     self.image_service = ImageGenerationService()
-
     @strawberry.mutation(
         description="Generate one or more images based on the provided prompt and options"
     )
