@@ -10,6 +10,7 @@ from app.types.responses import (
 )
 from datetime import datetime
 import uuid
+import base64
 
 
 @strawberry.type
@@ -28,7 +29,7 @@ class GenerateImageMutations:
             # Generate images
             results = []
             for _ in range(input.num_images):
-                url = await self.image_service.generate(
+                image_bytes = await self.image_service.generate(
                     model_type=input.model_type,
                     prompt=input.prompt,
                     width=input.width,
@@ -36,10 +37,12 @@ class GenerateImageMutations:
                     num_inference_steps=input.num_inference_steps,
                 )
 
+                image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
                 results.append(
                     ImageGenerationResult(
                         id=str(uuid.uuid4()),
-                        url=url,
+                        image_base64=image_base64,
                         created_at=datetime.utcnow().isoformat(),
                         prompt=input.prompt,
                         format=input.format,

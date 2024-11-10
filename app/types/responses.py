@@ -6,7 +6,7 @@ from .enums import ImageFormat, ImageStyle
 @strawberry.type
 class ImageGenerationResult:
     id: str
-    url: str
+    image_base64: str
     created_at: str
     prompt: str
     format: ImageFormat

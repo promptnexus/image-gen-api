@@ -35,7 +35,7 @@ type ImageGenerationResponse {
 
 type ImageGenerationResult {
   id: String!
-  url: String!
+  imageBase64: String!
   createdAt: String!
   prompt: String!
   format: ImageFormat!
@@ -80,7 +80,7 @@ type Mutation {
   results: [ImageGenerationResult!]
   error: ImageGenerationError
   id: String!
-  url: String!
+  imageBase64: String!
   createdAt: String!
 }
 
