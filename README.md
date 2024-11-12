@@ -101,6 +101,7 @@ SDKs are automatically generated for:
 - TypeScript
 - Go
 - Java
+- More coming soon!
 
 ## Environment Variables
 
