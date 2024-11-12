@@ -118,7 +118,6 @@ HOST=0.0.0.0
 
 MIT
 
-
 ## Contributing
 
 We welcome contributions! To add a new model, follow these steps:
