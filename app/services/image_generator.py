@@ -37,8 +37,6 @@ class ImageGenerationService:
 
             print("Registered pipelines:", PipelineRegistry._registry)
 
-            print(load_model)  # Print the load_model function
-
             model = load_model(image_gen_input.model_type, self.config)
 
             print(f"Model loaded: {image_gen_input.model_type}")
