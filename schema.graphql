@@ -57,6 +57,7 @@ enum ModelType {
   STABLE_V2_1
   FLUX_1_DEV
   FLUX_1_SCHNELL
+  DEEPFLOYD_V1
 }
 
 type Mutation {

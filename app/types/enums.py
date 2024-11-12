@@ -24,3 +24,5 @@ class ModelType(Enum):
     STABLE_V2_1 = "stabilityai/stable-diffusion-2-1"
     FLUX_1_DEV = "black-forest-labs/FLUX.1-dev"
     FLUX_1_SCHNELL = "black-forest-labs/FLUX.1-schnell"
+    #STYLEGAN2_ADA = "stylegan2-ada-pytorch"
+    DEEPFLOYD_V1 = "DeepFloyd/IF-I-XL-v1.0"
