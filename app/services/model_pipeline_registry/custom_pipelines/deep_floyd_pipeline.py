@@ -45,6 +45,7 @@ class DeepFloydCombinedPipeline:
            "safety_checker": self.stage_1.safety_checker,
            "watermarker": self.stage_1.watermarker
        }
+       
        self.stage_3 = DiffusionPipeline.from_pretrained(
            "stabilityai/stable-diffusion-x4-upscaler",
            **safety_modules,

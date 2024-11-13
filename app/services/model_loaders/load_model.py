@@ -4,19 +4,29 @@ from app.services.model_pipeline_registry.pipeline_registry import PipelineRegis
 from app.types.enums import ModelType
 import torch
 import os
+from rich.console import Console
+from rich.table import Table
 
+def display_pipeline_info(model_type: ModelType, config: GeneratorServiceConfig) -> None:
+    console = Console()
+
+    # Create a table to display the pipeline information
+    table = Table(title="Model Pipeline Information")
+
+    table.add_column("Attribute", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Value", style="magenta")
+
+    # Add rows to the table
+    table.add_row("Model Type", model_type.value)
+    table.add_row("Configuration", str(config))
+    
+    # Print the table
+    console.print(table)
 
 def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
-    print(f"Loading model for {model_type}")
-    print(PipelineRegistry)
-    print(PipelineRegistry._registry)
 
-    # adjust the number of cores to you liking.
-    num_cores = os.cpu_count() // 2
-    torch.set_num_threads(num_cores)
-    torch.set_num_interop_threads(num_cores // 2)
-    os.environ["OMP_NUM_THREADS"] = str(num_cores)
-    os.environ["MKL_NUM_THREADS"] = str(num_cores)
+    # Call the new function
+    display_pipeline_info(model_type, config)
 
     try:
         pipeline_config = PipelineRegistry.get(model_type)
@@ -24,12 +34,9 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
 
     except ValueError:
         print(f"Pipeline config not found for {model_type}")
+        return None
 
     print(f"Pipeline class for {model_type}: {pipeline_config.pipeline_class}")
-
-    print(
-        f"Has from_pretrained: {hasattr(pipeline_config.pipeline_class, 'from_pretrained')}"
-    )
 
     if config.device in ["cuda", "mps"]:
         from torch.cuda.amp import autocast
@@ -67,10 +74,10 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
             and torch.cuda.is_available()
     ):
         model.enable_model_cpu_offload()
-    else:
-        if config.device == "cpu":
-            print("Setting CPU-specific optimizations...")
-            torch.set_num_threads(num_cores)
+    # else:
+    #     if config.device == "cpu":
+    #         print("Setting CPU-specific optimizations...")
+    #         torch.set_num_threads(num_cores)
 
     model = model.to(config.device)
     return model
