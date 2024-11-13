@@ -22,14 +22,9 @@ sentencepiece = "^0.2.0"
 accelerate = "^1.1.1"
 safetensors = "^0.4.5"
 numpy = "<2.0"
-torch = [
-    { version = "2.4.0", markers = "sys_platform == 'darwin'" },
-    { url = "https://download.pytorch.org/whl/cu121/torch-2.4.0%2Bcu121-cp311-cp311-win_amd64.whl", markers = "sys_platform == 'win32'" }
-]
-torchvision = [
-    { version = "0.19.0", markers = "sys_platform == 'darwin'" },
-    { url = "https://download.pytorch.org/whl/cu121/torchvision-0.19.0%2Bcu121-cp311-cp311-win_amd64.whl", markers = "sys_platform == 'win32'" }
-]
+torch = "=2.4.0"
+torchvision = "0.19.0"
+rich = "^13.9.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"
