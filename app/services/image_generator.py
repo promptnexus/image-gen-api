@@ -11,6 +11,7 @@ from app.services.model_loaders.load_model import load_model
 from app.services.model_pipeline_registry.pipeline_registry import PipelineRegistry
 from app.types.enums import ModelType
 from app.types.image_generation_input import ImageGenerationInput
+import traceback
 
 
 class ImageGenerationService:
@@ -70,4 +71,5 @@ class ImageGenerationService:
         except Exception as e:
             # Log the error
             print(f"Error generating image: {e}")
+            traceback.print_exc()
             raise

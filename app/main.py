@@ -9,10 +9,26 @@ import subprocess
 from app.schema import schema
 from app.services.auth import get_context
 
-from dotenv import load_dotenv  # Add this import
+from dotenv import load_dotenv
+import torch
+from app.services.utils import pick_device
 
-# Load .env file at startup
-load_dotenv()  # Add this line
+load_dotenv()
+
+def initialize_torch_env():
+    device = pick_device()
+    num_cores = os.cpu_count() // 2
+
+    # Set interop threads for CPU-GPU communication regardless of device
+    # torch.set_num_interop_threads(num_cores // 2)
+
+    if device == "cpu":
+        print("Setting CPU-specific optimizations...")
+        torch.set_num_threads(num_cores)
+        os.environ["OMP_NUM_THREADS"] = str(num_cores)
+        os.environ["MKL_NUM_THREADS"] = str(num_cores)
+
+    return device
 
 
 @asynccontextmanager
@@ -59,6 +75,7 @@ async def dev_context():
     """Development context with no auth"""
     return {}
 
+initialize_torch_env()
 
 # Choose context based on environment
 context_getter = dev_context if os.getenv("DISABLE_AUTH") else get_context
@@ -69,8 +86,7 @@ graphql_app = GraphQLRouter(schema, context_getter=context_getter, graphiql=True
 app.include_router(graphql_app, prefix="/graphql")  # GraphQL endpoint
 app.add_route("/", graphql_app)
 
-
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=9000, reload=True)

@@ -2,7 +2,8 @@ from typing import Dict
 from app.services.model_pipeline_registry.types import PipelineConfig
 from app.types.enums import ModelType
 from diffusers import StableDiffusionPipeline, FluxPipeline
-
+from diffusers.utils import pt_to_pil
+from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline import DeepFloydCombinedPipeline
 
 class PipelineRegistry:
     _registry: Dict[ModelType, PipelineConfig] = {}
@@ -61,6 +62,34 @@ class PipelineRegistry:
                 default_params={"safety_checker": None},
                 inference_params={"num_inference_steps": 50},
             ),
+        )
+
+        # stage_2 = DiffusionPipeline.from_pretrained(
+        #     "DeepFloyd/IF-II-L-v1.0", text_encoder=None, variant="fp16", torch_dtype=torch.float16
+        # )
+
+        df_default_params = {
+            "stage1": {
+                "variant": "fp16",
+            },
+            "stage2": {
+                "variant": "fp16",
+                "text_encoder": None,
+            },
+            "stage3": {}
+        }
+
+        df_inference_params = {
+            "noise_level": 100,
+        }
+
+        cls.register(
+            ModelType.DEEPFLOYD_V1,
+            PipelineConfig(
+                pipeline_class=DeepFloydCombinedPipeline,
+                default_params=df_default_params,
+                inference_params=df_inference_params
+            )
         )
 
 

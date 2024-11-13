@@ -14,6 +14,9 @@ class GeneratorServiceConfig:
         self.hf_token = hf_token
         self.device = device
 
+    def __str__(self):
+        return f"GeneratorServiceConfig(cache_dir={self.cache_dir}, device={self.device})"
+
 
 def build_gen_service_config(
     cache_dir: str = "/tmp/model_cache", hf_token: str = None

@@ -1,4 +1,3 @@
-# validators/__init__.py
 from pathlib import Path
 from importlib import import_module
 from typing import List, Type
@@ -16,7 +15,8 @@ def load_validators() -> List[Type[ValidationRule]]:
 
         # Convert path to module path (e.g. validators.image_generation_input.something)
         relative_path = path.relative_to(validators_dir.parent)
-        module_path = str(relative_path.with_suffix("")).replace("/", ".")
+        # Use parts to build the module path - this handles both Windows and Unix paths
+        module_path = ".".join(relative_path.with_suffix("").parts)
 
         # Import the module and collect ValidationRule classes
         module = import_module(module_path)
