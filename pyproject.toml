@@ -25,6 +25,10 @@ numpy = "<2.0"
 torch = "=2.4.0"
 torchvision = "0.19.0"
 rich = "^13.9.4"
+python-jose = "^3.3.0"
+fastapi-login = "^1.10.2"
+pocketbase = "^0.12.3"
+python-multipart = "^0.0.17"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"

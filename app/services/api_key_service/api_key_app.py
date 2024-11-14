@@ -1,28 +1,15 @@
 import os
-import uuid
-from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import APIRouter
 from pydantic import BaseModel
-from jose import JWTError, jwt
+
 from app.services.api_key_service.api_key_manager import ApiKeyManager
-
-
-# New models for token handling
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    expires_at: datetime
-
-
-class TokenData(BaseModel):
-    email: Optional[str] = None
 
 
 class User(BaseModel):
@@ -40,95 +27,87 @@ class ApiKeyApp:
     def __init__(self, api_key_manager: ApiKeyManager):
         self.manager = api_key_manager
         self.router = APIRouter()
-        self.templates = Jinja2Templates(directory="templates")
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+        self.templates = Jinja2Templates(
+            directory=os.path.join(os.path.dirname(__file__), "templates")
+        )
 
-        self.JWT_ENCODER_KEY = os.getenv("JWT_ENCODER_KEY")
+        # Option 1: With prefix
+        self.login_manager = LoginManager(
+            secret=os.getenv("JWT_ENCODER_KEY"),
+            token_url="/manage/auth/login",
+            use_cookie=True,
+        )
 
-        self.ALGORITHM = "HS256"
-        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30
+        # Option 2: Without prefix
+        # self.login_manager = LoginManager(
+        #     secret=os.getenv("JWT_ENCODER_KEY"),
+        #     token_url="/auth/login",
+        #     use_cookie=True,
+        #     custom_exception=InvalidCredentialsException
+        # )
+
+        self.login_manager.user_loader(self.load_user)
         self._setup_routes()
 
-    def create_access_token(self, data: dict):
-        to_encode = data.copy()
-        expire = datetime.utcnow() + timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
-        to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(
-            to_encode, self.JWT_ENCODER_KEY, algorithm=self.ALGORITHM
-        )
-        return Token(access_token=encoded_jwt, token_type="bearer", expires_at=expire)
-
-    async def get_current_user(self, token: str = Depends(oauth2_scheme)):
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        try:
-            payload = jwt.decode(
-                token, self.JWT_ENCODER_KEY, algorithms=[self.ALGORITHM]
-            )
-
-            email: str = payload.get("sub")
-            if email is None:
-                raise credentials_exception
-            token_data = TokenData(email=email)
-        except JWTError:
-            raise credentials_exception
-
+    def load_user(self, email: str):
         user = self.manager.client.collection("users").get_first_list_item(
-            f'email="{token_data.email}"'
+            f'email="{email}"'
         )
-        if user is None:
-            raise credentials_exception
-        return user
+        if user:
+            return User(email=user.email, is_admin=user.is_admin)
+        return None
 
     def _setup_routes(self):
-        @self.manager.user_loader
-        def load_user(email: str):
-            user = self.manager.client.collection("users").get_first_list_item(
-                f'email="{email}"'
+        @self.router.get("/auth/register", response_class=HTMLResponse)
+        async def register_form(request: Request):
+            return self.templates.TemplateResponse(
+                "register.html", {"request": request}
             )
-            if user:
-                return User(email=user.email, is_admin=user.is_admin)
-            return None
 
-        @self.router.post("/auth/login")
-        async def login_user(
-            response: Response, form_data: OAuth2PasswordRequestForm = Depends()
-        ):
-            email = form_data.username
-            password = form_data.password
-            user = load_user(email)
+        @self.router.get("/auth/login", response_class=HTMLResponse)
+        async def login_form(request: Request):
+            return self.templates.TemplateResponse("login.html", {"request": request})
 
-            if not user or not self.manager.verify_password(password, user.password):
+        @self.router.post("/auth/register")
+        async def register(data: OAuth2PasswordRequestForm = Depends()):
+            email = data.username
+            password = data.password
+
+            existing_user = self.load_user(email)
+            if existing_user:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid credentials",
-                    headers={"WWW-Authenticate": "Bearer"},
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered",
                 )
 
-            token = self.create_access_token(data={"sub": email})
+            self.manager.create_user(email, password)
+            return RedirectResponse(url="/auth/login", status_code=302)
 
-            response.set_cookie(
-                key="access_token",
-                value=f"Bearer {token.access_token}",
-                httponly=True,
-                secure=True,
-                samesite="lax",
-                expires=token.expires_at.timestamp(),
-            )
+        @self.router.post("/auth/login")
+        async def login(data: OAuth2PasswordRequestForm = Depends()):
+            email = data.username
+            password = data.password
 
-            return token
+            user = self.load_user(email)
+            if not user:
+                raise InvalidCredentialsException
+            elif not self.manager.verify_password(password, user.password):
+                raise InvalidCredentialsException
+
+            token = self.login_manager.create_access_token(data={"sub": email})
+            response = RedirectResponse(url="/manage/organizations", status_code=302)
+            self.login_manager.set_cookie(response, token)
+            return response
 
         @self.router.post("/auth/logout")
-        async def logout(response: Response):
+        def logout():
+            response = RedirectResponse(url="/manage/auth/login", status_code=302)
             response.delete_cookie("access_token")
-            return {"message": "Successfully logged out"}
+            return response
 
-        @self.router.get("/organizations", response_model=List[Organization])
+        @self.router.get("/organizations")
         async def list_organizations(
-            request: Request, current_user: User = Depends(self.get_current_user)
+            request: Request, user=Depends(self.login_manager)
         ):
             org_records = self.manager.client.collection(
                 "organizations"
@@ -142,12 +121,12 @@ class ApiKeyApp:
                 {"request": request, "organizations": organizations},
             )
 
-        @self.router.post("/organizations", response_model=Organization)
+        @self.router.post("/organizations")
         async def create_organization(
             request: Request,
             email: str,
             org_name: str,
-            current_user: User = Depends(self.get_current_user),
+            user=Depends(self.login_manager),
         ):
             org_record = self.manager.create_organization(org_name, email)
             return self.templates.TemplateResponse(
@@ -156,14 +135,12 @@ class ApiKeyApp:
 
         @self.router.post("/organizations/{org_id}/users")
         async def add_user_to_organization(
-            org_id: str,
-            user_email: str,
-            current_user: User = Depends(self.get_current_user),
+            org_id: str, user_email: str, user=Depends(self.login_manager)
         ):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or org.admin_email != current_user.email:
+            if not org or org.admin_email != user.email:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only admins can add users to the organization",
@@ -173,14 +150,12 @@ class ApiKeyApp:
 
         @self.router.delete("/organizations/{org_id}/users")
         async def delete_user_from_organization(
-            org_id: str,
-            user_email: str,
-            current_user: User = Depends(self.get_current_user),
+            org_id: str, user_email: str, user=Depends(self.login_manager)
         ):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or org.admin_email != current_user.email:
+            if not org or org.admin_email != user.email:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only admins can delete users from the organization",
@@ -189,13 +164,11 @@ class ApiKeyApp:
             return {"message": "User deleted successfully"}
 
         @self.router.get("/organizations/{org_id}/api-keys")
-        async def get_api_keys(
-            org_id: str, current_user: User = Depends(self.get_current_user)
-        ):
+        async def get_api_keys(org_id: str, user=Depends(self.login_manager)):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or current_user.email not in org.members:
+            if not org or user.email not in org.members:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only members can view API keys",
@@ -205,14 +178,12 @@ class ApiKeyApp:
 
         @self.router.post("/organizations/{org_id}/api-keys")
         async def generate_api_key(
-            org_id: str,
-            key_name: str,
-            current_user: User = Depends(self.get_current_user),
+            org_id: str, key_name: str, user=Depends(self.login_manager)
         ):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or current_user.email not in org.members:
+            if not org or user.email not in org.members:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only members can generate API keys",
@@ -222,14 +193,12 @@ class ApiKeyApp:
 
         @self.router.get("/organizations/{org_id}/api-keys/{key_name}")
         async def fetch_api_key(
-            org_id: str,
-            key_name: str,
-            current_user: User = Depends(self.get_current_user),
+            org_id: str, key_name: str, user=Depends(self.login_manager)
         ):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or current_user.email not in org.members:
+            if not org or user.email not in org.members:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only members can fetch API keys",
@@ -239,14 +208,12 @@ class ApiKeyApp:
 
         @self.router.delete("/organizations/{org_id}")
         async def delete_organization(
-            org_id: str,
-            admin_email: str,
-            current_user: User = Depends(self.get_current_user),
+            org_id: str, admin_email: str, user=Depends(self.login_manager)
         ):
             org = self.manager.client.collection("organizations").get_first_list_item(
                 f'id="{org_id}"'
             )
-            if not org or org.admin_email != current_user.email:
+            if not org or org.admin_email != user.email:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only admins can delete the organization",
