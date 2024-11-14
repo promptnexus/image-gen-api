@@ -63,26 +63,6 @@ enum ModelType {
 type Mutation {
   """Generate one or more images based on the provided prompt and options"""
   generateImages(imageGenInput: ImageGenerationInput!): ImageGenerationResponse!
-  message: String!
-  code: String!
-  prompt: PromptString!
-  imageFormat: ImageFormat!
-  width: Int
-  height: Int
-  style: ImageStyle!
-
-  """Number of images to generate"""
-  numImages: ImageCount!
-
-  """Type of model to use for image generation"""
-  modelType: ModelType!
-  numInferenceSteps: Int
-  success: Boolean!
-  results: [ImageGenerationResult!]
-  error: ImageGenerationError
-  id: String!
-  imageBase64: String!
-  createdAt: String!
 }
 
 """A string between 3 and 1000 characters for image generation prompts"""

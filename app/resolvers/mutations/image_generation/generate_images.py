@@ -1,5 +1,4 @@
 from app.dependencies import get_image_generation_service
-from app.services.image_generator import ImageGenerationService
 import strawberry
 from strawberry.types import Info
 
