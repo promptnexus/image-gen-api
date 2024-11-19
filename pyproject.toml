@@ -29,6 +29,7 @@ python-jose = "^3.3.0"
 fastapi-login = "^1.10.2"
 pocketbase = "^0.12.3"
 python-multipart = "^0.0.17"
+bcrypt = "^4.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"

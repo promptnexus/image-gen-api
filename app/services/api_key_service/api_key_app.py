@@ -1,20 +1,21 @@
 import os
-from typing import Optional, List
+from typing import Annotated, Optional, List
 from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import APIRouter
+from jose import JWTError
 from pydantic import BaseModel
+import jwt
 
 from app.services.api_key_service.api_key_manager import ApiKeyManager
+from app.services.api_key_service.models.user import User
 
 
-class User(BaseModel):
-    email: str
-    is_admin: bool
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class Organization(BaseModel):
@@ -38,24 +39,38 @@ class ApiKeyApp:
             use_cookie=True,
         )
 
-        # Option 2: Without prefix
-        # self.login_manager = LoginManager(
-        #     secret=os.getenv("JWT_ENCODER_KEY"),
-        #     token_url="/auth/login",
-        #     use_cookie=True,
-        #     custom_exception=InvalidCredentialsException
-        # )
+        @self.login_manager.user_loader()
+        def load_user(email: str):
+            return self.manager.db_service.get_user(email)
 
-        self.login_manager.user_loader(self.load_user)
+        # self.login_manager.user_loader(self.load_user)
         self._setup_routes()
 
-    def load_user(self, email: str):
-        user = self.manager.client.collection("users").get_first_list_item(
-            f'email="{email}"'
-        )
-        if user:
-            return User(email=user.email, is_admin=user.is_admin)
-        return None
+    async def get_current_user(self, token: Annotated[str, Depends(oauth2_scheme)]):
+        try:
+            # Need to provide the secret key and algorithm
+            payload = jwt.decode(
+                token,
+                os.getenv("JWT_ENCODER_KEY"),
+                algorithms=["HS256"],  # or whatever algorithm you're using for encoding
+            )
+            username = payload.get("sub")
+            if username is None:
+                raise HTTPException(
+                    status_code=401, detail="Invalid authentication credentials"
+                )
+            user = self.load_user(username)  # Load user from your database
+            if user is None:
+                raise HTTPException(status_code=401, detail="User not found")
+            return user
+        except JWTError:
+            raise HTTPException(
+                status_code=401, detail="Could not validate credentials"
+            )
+
+    def load_user(self, email: str) -> User | None:
+        """Load user for authentication"""
+        return self.manager.db_service.get_user(email)
 
     def _setup_routes(self):
         @self.router.get("/auth/register", response_class=HTMLResponse)
@@ -65,38 +80,84 @@ class ApiKeyApp:
             )
 
         @self.router.get("/auth/login", response_class=HTMLResponse)
-        async def login_form(request: Request):
+        async def login_form(
+            request: Request,
+        ):
             return self.templates.TemplateResponse("login.html", {"request": request})
 
         @self.router.post("/auth/register")
         async def register(data: OAuth2PasswordRequestForm = Depends()):
+            print(data)
+
             email = data.username
             password = data.password
 
-            existing_user = self.load_user(email)
+            print(email)
+            print(password)
+
+            # Check if user already exists
+            existing_user = self.manager.db_service.get_user(email)
+
             if existing_user:
+                print("Already registered")
+
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Email already registered",
                 )
 
-            self.manager.create_user(email, password)
-            return RedirectResponse(url="/auth/login", status_code=302)
+            print("Registering user")
+
+            # Create new user
+            try:
+                user = self.manager.db_service.create_user(email, password)
+
+                # Generate token directly here instead of calling login
+                token = self.login_manager.create_access_token(data={"sub": email})
+
+                # Create response and set cookie
+                response = RedirectResponse(
+                    url="/manage/organizations", status_code=302
+                )
+
+                print(token)
+
+                self.login_manager.set_cookie(response, token)
+
+                return RedirectResponse(url="/manage/auth/login", status_code=302)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+                )
 
         @self.router.post("/auth/login")
-        async def login(data: OAuth2PasswordRequestForm = Depends()):
+        async def login(
+            response: Response,
+            data: OAuth2PasswordRequestForm = Depends(),
+        ):
             email = data.username
             password = data.password
 
-            user = self.load_user(email)
+            # First use your service to authenticate the user
+            user = self.manager.db_service.authenticate_user(email, password)
             if not user:
-                raise InvalidCredentialsException
-            elif not self.manager.verify_password(password, user.password):
-                raise InvalidCredentialsException
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid email or password",
+                )
 
-            token = self.login_manager.create_access_token(data={"sub": email})
+            # Create access token
+            access_token = self.login_manager.create_access_token(
+                data={"sub": email}  # 'sub' is required for the login manager to work
+            )
+
+            print(access_token)
+
+            # Set the cookie using login manager
             response = RedirectResponse(url="/manage/organizations", status_code=302)
-            self.login_manager.set_cookie(response, token)
+
+            self.login_manager.set_cookie(response, access_token)
+
             return response
 
         @self.router.post("/auth/logout")
@@ -109,16 +170,23 @@ class ApiKeyApp:
         async def list_organizations(
             request: Request, user=Depends(self.login_manager)
         ):
-            org_records = self.manager.client.collection(
-                "organizations"
-            ).get_full_list()
-            organizations = [
-                Organization(id=org.id, name=org.name, admin_email=org.admin_email)
-                for org in org_records
-            ]
+            print(user)
+
+            # org_records = self.manager.client.collection(
+            #     "organizations"
+            # ).get_full_list()
+            # organizations = [
+            #     Organization(id=org.id, name=org.name, admin_email=org.admin_email)
+            #     for org in org_records
+            # ]
+
             return self.templates.TemplateResponse(
                 "organizations.html",
-                {"request": request, "organizations": organizations},
+                {
+                    "request": request,
+                    # "organizations": organizations,
+                    "user_email": user.email,
+                },
             )
 
         @self.router.post("/organizations")
