@@ -1,6 +1,6 @@
 import os
 from typing import Annotated, Optional, List
-from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
+from fastapi import FastAPI, Depends, Form, HTTPException, status, Request, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
@@ -12,16 +12,11 @@ from pydantic import BaseModel
 import jwt
 
 from app.services.api_key_service.api_key_manager import ApiKeyManager
+from app.services.api_key_service.models.organization import Organization
 from app.services.api_key_service.models.user import User
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-class Organization(BaseModel):
-    id: str
-    name: str
-    admin_email: str
 
 
 class ApiKeyApp:
@@ -41,6 +36,12 @@ class ApiKeyApp:
 
         @self.login_manager.user_loader()
         def load_user(email: str):
+            print(f"Loading user: {email}")
+            if not email:  # Handle cases where email is None or invalid
+                raise HTTPException(
+                    status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+                    headers={"Location": "/auth/login"},
+                )
             return self.manager.db_service.get_user(email)
 
         # self.login_manager.user_loader(self.load_user)
@@ -54,6 +55,10 @@ class ApiKeyApp:
                 os.getenv("JWT_ENCODER_KEY"),
                 algorithms=["HS256"],  # or whatever algorithm you're using for encoding
             )
+
+            print("decoded token")
+            print(payload)
+
             username = payload.get("sub")
             if username is None:
                 raise HTTPException(
@@ -138,8 +143,12 @@ class ApiKeyApp:
             email = data.username
             password = data.password
 
+            print("logging in")
+            print(email)
+
             # First use your service to authenticate the user
             user = self.manager.db_service.authenticate_user(email, password)
+
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -151,6 +160,7 @@ class ApiKeyApp:
                 data={"sub": email}  # 'sub' is required for the login manager to work
             )
 
+            print("access token")
             print(access_token)
 
             # Set the cookie using login manager
@@ -170,36 +180,54 @@ class ApiKeyApp:
         async def list_organizations(
             request: Request, user=Depends(self.login_manager)
         ):
-            print(user)
+            try:
+                print("user.email")
+                print(user.email)
 
-            # org_records = self.manager.client.collection(
-            #     "organizations"
-            # ).get_full_list()
-            # organizations = [
-            #     Organization(id=org.id, name=org.name, admin_email=org.admin_email)
-            #     for org in org_records
-            # ]
+                organizations = self.manager.db_service.get_organizations(user.email)
 
-            return self.templates.TemplateResponse(
-                "organizations.html",
-                {
-                    "request": request,
-                    # "organizations": organizations,
-                    "user_email": user.email,
-                },
-            )
+                print("organizations")
+                print(organizations)
+
+                return self.templates.TemplateResponse(
+                    "organizations.html",
+                    {
+                        "request": request,
+                        "organizations": organizations,
+                        "user_email": user.email,
+                    },
+                )
+            except Exception as e:
+                # Log the exception
+                print(f"Error listing organizations: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="An error occurred while listing organizations",
+                )
 
         @self.router.post("/organizations")
         async def create_organization(
             request: Request,
-            email: str,
-            org_name: str,
+            name: str = Form(...),  # Explicitly indicate this is a form field
             user=Depends(self.login_manager),
         ):
-            org_record = self.manager.create_organization(org_name, email)
-            return self.templates.TemplateResponse(
-                "organization.html", {"request": request, "organization": org_record}
-            )
+            print("create_organization")
+            print(name)
+
+            org_record = self.manager.create_organization(name, user.email)
+
+            print(org_record)
+
+            # Redirect to the GET endpoint for organizations
+            return RedirectResponse(url="/manage/organizations", status_code=303)
+            # return self.templates.TemplateResponse(
+            #     "organizations.html",
+            #     {
+            #         "request": request,
+            #         "organization": org_record,
+            #         "user_email": user.email,
+            #     },
+            # )
 
         @self.router.post("/organizations/{org_id}/users")
         async def add_user_to_organization(

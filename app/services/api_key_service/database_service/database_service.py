@@ -1,3 +1,4 @@
+from app.services.api_key_service.models.organization import Organization
 from app.services.api_key_service.models.user import User
 
 
@@ -20,7 +21,7 @@ class DatabaseService:
     def create_organization(self, org_name, admin_email):
         raise NotImplementedError
 
-    def get_organizations(self, user_email):
+    def get_organizations(self, user_email) -> list[Organization]:
         raise NotImplementedError
 
     def delete_organization(self, org_id, admin_email):

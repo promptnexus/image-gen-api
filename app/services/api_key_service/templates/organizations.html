@@ -9,4 +9,11 @@
     <li>{{ organization.name }}</li>
   {% endfor %}
 </ul>
+
+<h3>Create a new organization</h3>
+<form action="/manage/organizations" method="post" enctype="application/x-www-form-urlencoded">
+  <label for="name">Organization Name:</label>
+  <input type="text" id="name" name="name" required>
+  <button type="submit">Create</button>
+</form>
 {% endblock %}

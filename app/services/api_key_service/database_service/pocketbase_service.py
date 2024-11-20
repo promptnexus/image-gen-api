@@ -4,6 +4,7 @@ from app.services.api_key_service.database_service.database_service import (
 import pocketbase
 import bcrypt
 
+from app.services.api_key_service.models.organization import Organization
 from app.services.api_key_service.models.user import User
 
 
@@ -41,13 +42,13 @@ class PocketBaseDatabaseService(DatabaseService):
         return user_record
 
     def delete_user_from_organization(self, org_id, user_email):
-        records = self.client.collection("organization_users").get_full_list(
+        records = self.client.collection("organizations").get_full_list(
             query_params={
                 "filter": f'organization_id="{org_id}" AND user_email="{user_email}"'
             }
         )
         if records:
-            self.client.collection("organization_users").delete(records[0].id)
+            self.client.collection("organizations").delete(records[0].id)
             return True
         return False
 
@@ -57,15 +58,22 @@ class PocketBaseDatabaseService(DatabaseService):
         )
         return org_record
 
-    def get_organizations(self, user_email):
-        records = self.client.collection("organization_users").get_full_list(
-            query_params={"filter": f'user_email="{user_email}"'}
+    def get_organizations(self, user_email) -> list[Organization]:
+        records = self.client.collection("organizations").get_full_list(
+            query_params={
+                "filter": f'members.email = "{user_email}" || admin_email = "{user_email}"'
+            }
         )
-        org_ids = [record.organization_id for record in records]
+
+        if not records:
+            return []
+
+        org_ids = [record.id for record in records]
         organizations = []
         for org_id in org_ids:
             org_record = self.client.collection("organizations").get_one(org_id)
             organizations.append(org_record)
+
         return organizations
 
     def delete_organization(self, org_id, admin_email):
