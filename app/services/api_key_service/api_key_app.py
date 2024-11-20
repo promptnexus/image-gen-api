@@ -145,9 +145,13 @@ class ApiKeyApp:
 
             print("logging in")
             print(email)
+            print(password)
 
             # First use your service to authenticate the user
             user = self.manager.db_service.authenticate_user(email, password)
+
+            print("got user")
+            print(user)
 
             if not user:
                 raise HTTPException(
@@ -180,11 +184,13 @@ class ApiKeyApp:
         async def list_organizations(
             request: Request, user=Depends(self.login_manager)
         ):
+            print("list_organizations")
+            print(user)
             try:
                 print("user.email")
                 print(user.email)
 
-                organizations = self.manager.db_service.get_organizations(user.email)
+                organizations = self.manager.db_service.get_organizations(user.id)
 
                 print("organizations")
                 print(organizations)
@@ -214,20 +220,12 @@ class ApiKeyApp:
             print("create_organization")
             print(name)
 
-            org_record = self.manager.create_organization(name, user.email)
+            org_record = self.manager.create_organization(name, user.id)
 
             print(org_record)
 
             # Redirect to the GET endpoint for organizations
             return RedirectResponse(url="/manage/organizations", status_code=303)
-            # return self.templates.TemplateResponse(
-            #     "organizations.html",
-            #     {
-            #         "request": request,
-            #         "organization": org_record,
-            #         "user_email": user.email,
-            #     },
-            # )
 
         @self.router.post("/organizations/{org_id}/users")
         async def add_user_to_organization(
@@ -259,31 +257,42 @@ class ApiKeyApp:
             self.manager.delete_user_from_organization(org_id, user_email)
             return {"message": "User deleted successfully"}
 
-        @self.router.get("/organizations/{org_id}/api-keys")
-        async def get_api_keys(org_id: str, user=Depends(self.login_manager)):
-            org = self.manager.client.collection("organizations").get_first_list_item(
-                f'id="{org_id}"'
-            )
-            if not org or user.email not in org.members:
+        @self.router.get("/organizations/{org_id}")
+        async def get_api_keys(
+            request: Request, org_id: str, user=Depends(self.login_manager)
+        ):
+            org = self.manager.get_organization(org_id, user.id)
+
+            if not org:
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Only members can view API keys",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Organization not found",
                 )
+
             api_keys = self.manager.get_api_keys(org_id)
-            return api_keys
+            return self.templates.TemplateResponse(
+                "organizationpage.html",
+                {
+                    "request": request,
+                    "api_keys": api_keys,
+                    "organization_id": org_id,
+                    "organization_name": org.name,
+                    "user_email": user.email,
+                },
+            )
 
         @self.router.post("/organizations/{org_id}/api-keys")
         async def generate_api_key(
             org_id: str, key_name: str, user=Depends(self.login_manager)
         ):
-            org = self.manager.client.collection("organizations").get_first_list_item(
-                f'id="{org_id}"'
-            )
-            if not org or user.email not in org.members:
+            org = self.manager.get_organization(org_id, user.id)
+
+            if not org:
                 raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Only members can generate API keys",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Organization not found.",
                 )
+
             api_key = self.manager.generate_api_key(org_id, key_name)
             return {"api_key": api_key}
 

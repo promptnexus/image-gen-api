@@ -6,7 +6,7 @@
 <h2>Organizations</h2>
 <ul>
   {% for organization in organizations %}
-    <li>{{ organization.name }}</li>
+  <li><a href="/manage/organizations/{{ organization.id }}/">{{ organization.name }}</a></li>
   {% endfor %}
 </ul>
 

@@ -8,4 +8,4 @@ class Organization(BaseModel):
     id: str
     name: str
     admin_email: str
-    members: List[User] = []
+    members: List[str] = []

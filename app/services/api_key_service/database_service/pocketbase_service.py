@@ -13,9 +13,32 @@ class PocketBaseDatabaseService(DatabaseService):
         self.client = pocketbase.Client(pb_url)
         self.client.admins.auth_with_password(pb_email, pb_password)
 
+    def get_organization(self, org_id, user_id):
+        try:
+            records = self.client.collection("organizations").get_full_list(
+                query_params={
+                    "filter": f'id="{org_id}" && (admin="{user_id}" || members ?~ "{user_id}")'
+                }
+            )
+
+            if records:
+                return records[0]
+            return None
+        except Exception as e:
+            print(f"An error occurred while retrieving the organization: {e}")
+            return None
+
+    def get_api_key_by_hash(self, api_key_hash):
+        records = self.client.collection("api_keys").get_full_list(
+            query_params={"filter": f'hashed_key="{api_key_hash}"'}
+        )
+        if records:
+            return records[0].api_key
+        return None
+
     def set_api_key(self, org_id, key_name, api_key):
         record = self.client.collection("api_keys").create(
-            {"organization_id": org_id, "key_name": key_name, "api_key": api_key}
+            {"organization_id": org_id, "name": key_name, "hashed_key": api_key}
         )
         return record
 
@@ -33,36 +56,20 @@ class PocketBaseDatabaseService(DatabaseService):
         records = self.client.collection("api_keys").get_full_list(
             query_params={"filter": f'organization_id="{org_id}"'}
         )
-        return [record.api_key for record in records]
+        return [
+            ({"name": record.name, "organization_id": record.organization_id})
+            for record in records
+        ]
 
-    def add_user_to_organization(self, org_id, user_email):
-        user_record = self.client.collection("organization_users").create(
-            {"organization_id": org_id, "user_email": user_email}
-        )
-        return user_record
-
-    def delete_user_from_organization(self, org_id, user_email):
-        records = self.client.collection("organizations").get_full_list(
-            query_params={
-                "filter": f'organization_id="{org_id}" AND user_email="{user_email}"'
-            }
-        )
-        if records:
-            self.client.collection("organizations").delete(records[0].id)
-            return True
-        return False
-
-    def create_organization(self, org_name, admin_email):
+    def create_organization(self, org_name, admin_id):
         org_record = self.client.collection("organizations").create(
-            {"name": org_name, "admin_email": admin_email}
+            {"name": org_name, "admin": admin_id}
         )
         return org_record
 
-    def get_organizations(self, user_email) -> list[Organization]:
+    def get_organizations(self, user_id) -> list[Organization]:
         records = self.client.collection("organizations").get_full_list(
-            query_params={
-                "filter": f'members.email = "{user_email}" || admin_email = "{user_email}"'
-            }
+            query_params={"filter": f'members ?~ "{user_id}" || admin = "{user_id}"'}
         )
 
         if not records:
@@ -131,7 +138,10 @@ class PocketBaseDatabaseService(DatabaseService):
             )
 
             return User(
-                email=record.email, is_admin=record.is_admin, password=record.password
+                id=record.id,
+                email=record.email,
+                is_admin=record.is_admin,
+                password=record.password,
             )
         except Exception:
             return None

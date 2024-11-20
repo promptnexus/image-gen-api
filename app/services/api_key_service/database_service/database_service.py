@@ -3,6 +3,9 @@ from app.services.api_key_service.models.user import User
 
 
 class DatabaseService:
+    def get_organization(self, org_id, user_id):
+        raise NotImplementedError
+
     def set_api_key(self, org_id, api_key, key_name):
         raise NotImplementedError
 
@@ -21,7 +24,7 @@ class DatabaseService:
     def create_organization(self, org_name, admin_email):
         raise NotImplementedError
 
-    def get_organizations(self, user_email) -> list[Organization]:
+    def get_organizations(self, user_id) -> list[Organization]:
         raise NotImplementedError
 
     def delete_organization(self, org_id, admin_email):
@@ -34,4 +37,7 @@ class DatabaseService:
         raise NotImplementedError
 
     def authenticate_user(self, email: str, password: str) -> bool:
+        raise NotImplementedError
+
+    def get_api_key_by_hash(self, api_key_hash):
         raise NotImplementedError
