@@ -281,11 +281,15 @@ class ApiKeyApp:
                 },
             )
 
-        @self.router.post("/organizations/{org_id}/api-keys")
+        @self.router.post("/organizations/{organization_id}/api-keys")
         async def generate_api_key(
-            org_id: str, key_name: str, user=Depends(self.login_manager)
+            request: Request,
+            organization_id: str,
+            name: str = Form(...),  # Extract `name` from form data
+            user=Depends(self.login_manager),
         ):
-            org = self.manager.get_organization(org_id, user.id)
+            print("generate_api_key")
+            org = self.manager.get_organization(organization_id, user.id)
 
             if not org:
                 raise HTTPException(
@@ -293,8 +297,22 @@ class ApiKeyApp:
                     detail="Organization not found.",
                 )
 
-            api_key = self.manager.generate_api_key(org_id, key_name)
-            return {"api_key": api_key}
+            old_api_keys = self.manager.get_api_keys(organization_id)
+
+            api_key = self.manager.generate_api_key(organization_id, name)
+
+            return self.templates.TemplateResponse(
+                "organizationpage.html",
+                {
+                    "request": request,
+                    "api_keys": old_api_keys,
+                    "organization_id": organization_id,
+                    "api_key": api_key,
+                    "organization_name": org.name,
+                    "user_email": user.email,
+                    "new_api_key": api_key,
+                },
+            )
 
         @self.router.get("/organizations/{org_id}/api-keys/{key_name}")
         async def fetch_api_key(

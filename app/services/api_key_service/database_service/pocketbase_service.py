@@ -36,7 +36,7 @@ class PocketBaseDatabaseService(DatabaseService):
             return records[0].api_key
         return None
 
-    def set_api_key(self, org_id, key_name, api_key):
+    def set_api_key(self, org_id, api_key, key_name):
         record = self.client.collection("api_keys").create(
             {"organization_id": org_id, "name": key_name, "hashed_key": api_key}
         )
