@@ -10,6 +10,7 @@ import subprocess
 from fastapi_login.exceptions import InvalidCredentialsException
 
 from app.schema import schema
+from app.services.api_key_service.admin.main import create_admin_routes
 from app.services.api_key_service.api_key_service_driver import create_api_key_routes
 from app.services.auth import get_context
 
@@ -114,6 +115,8 @@ graphql_app = GraphQLRouter(
 app.include_router(graphql_app)  # GraphQL endpoint
 
 app.include_router(create_api_key_routes(), prefix="/manage")  # API key routes
+
+app.include_router(create_admin_routes(), prefix="/admin")  # Admin routes
 
 if __name__ == "__main__":
     import uvicorn

@@ -24,3 +24,13 @@ def create_api_key() -> Tuple[str, str]:
 def verify_api_key(incoming_key: str, stored_hash: str) -> bool:
     """Verify an incoming API key against a stored hash."""
     return hmac.compare_digest(hash_api_key(incoming_key), stored_hash)
+
+
+# def main():
+#   api_key, hashed_key = create_api_key()
+#   print(f"API Key: {api_key}")
+#   print(f"Hashed Key: {hashed_key}")
+
+
+# if __name__ == "__main__":
+#   main()

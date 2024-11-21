@@ -7,5 +7,5 @@ from app.services.api_key_service.models.user import User
 class Organization(BaseModel):
     id: str
     name: str
-    admin_email: str
+    admin: str
     members: List[str] = []
