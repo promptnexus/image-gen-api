@@ -92,8 +92,10 @@ class OrchestrationService:
                     api_key=ApiKeyResponse(
                         raw_key=created_api_key.raw_key,
                         name=created_api_key.name,
-                        organization_id=created_api_key.organization_id,
+                        id=created_api_key.id,
                     ),
+                    organization_id=created_org.id,
+                    user_id=created_user.id,
                 ),
             )
 

@@ -7,15 +7,15 @@ from app.services.api_key_service.models.user import User
 
 
 class ApiKeyResponse(BaseModel):
+    id: str
     raw_key: str
     name: str
-    organization_id: str
 
 
 class OrchestrationData(BaseModel):
-    # user: User
-    # organization: Organization
     api_key: ApiKeyResponse
+    organization_id: str
+    user_id: str
 
 
 class SuccessResponse(BaseModel):
