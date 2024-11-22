@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Image Generation API{% endblock %}</title>
+  <style>
+    /* Basic reset and centering */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body, html {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
+    }
+
+    html {
+      background: radial-gradient(circle,
+      rgba(199, 210, 254, 0.15) 0%,
+      rgba(254, 202, 202, 0.1) 40%,
+      rgba(216, 180, 254, 0.05) 60%,
+      rgba(216, 180, 254, 0) 100%
+      );
+    }
+    .container {
+      max-width: 800px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #000;
+    }
+    .highlight {
+      color: #6e00ff; /* Change to desired color for emphasis */
+    }
+    p {
+      font-size: 1.25rem;
+      color: #555;
+      margin: 1rem 0 2rem 0;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: bold;
+      display: inline-block;
+    }
+    .btn-primary {
+      background-color: #6e00ff;
+    }
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    nav {
+      width: 100%;
+      background-color: #555;
+      /* color: #fff; */
+      padding: 1rem 1rem;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      display: flex;
+    }
+    nav p {
+      color: #dcdcdc;
+      padding: 0;
+      margin: 0;
+    }
+    body {
+      padding-top: 80px; /* Adjust based on nav height */
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+    {% if user_email %}
+      <p>Welcome, {{ user_email }}!</p>
+    {% else %}
+      <p>Please log in</p>
+    {% endif %}
+    </div>
+  </nav>
+  <div class="container">
+    <header>
+      {% block header %}{% endblock %}
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+      {% block footer %}{% endblock %}
+    </footer>
+  </div>
+</body>
+</html>

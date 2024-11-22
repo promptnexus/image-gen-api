@@ -1,19 +1,29 @@
 from contextlib import asynccontextmanager
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from strawberry.fastapi import GraphQLRouter
 from pathlib import Path
 import subprocess
 
+from fastapi_login.exceptions import InvalidCredentialsException
+
 from app.schema import schema
+from app.services.api_key_service.admin.main import create_admin_routes
+from app.services.api_key_service.api_key_service_driver import create_api_key_routes
 from app.services.auth import get_context
 
 from dotenv import load_dotenv
 import torch
 from app.services.utils import pick_device
+from rich.console import Console
+from rich.table import Table
 
 load_dotenv()
+
+print(isinstance(InvalidCredentialsException, type))  # Should print `True`
+
 
 def initialize_torch_env():
     device = pick_device()
@@ -71,9 +81,23 @@ app = FastAPI(
 )
 
 
+# Define a custom exception
+class NotAuthenticatedException(Exception):
+    pass
+
+
+# Define the global exception handler once in the main app
+@app.exception_handler(HTTPException)
+async def auth_exception_handler(request: Request, exc: HTTPException):
+    if request.url.path.startswith("/manage"):
+        return RedirectResponse(url="/manage/auth/login", status_code=302)
+    return RedirectResponse(url="/auth/login", status_code=302)
+
+
 async def dev_context():
     """Development context with no auth"""
     return {}
+
 
 initialize_torch_env()
 
@@ -81,10 +105,18 @@ initialize_torch_env()
 context_getter = dev_context if os.getenv("DISABLE_AUTH") else get_context
 
 # Create GraphQL app
-graphql_app = GraphQLRouter(schema, context_getter=context_getter, graphiql=True)
+graphql_app = GraphQLRouter(
+    schema,
+    context_getter=context_getter,
+    graphiql=os.getenv("PN_IMAGE_GEN_APP_ENV") == "development",
+    path="/",
+)
 
-app.include_router(graphql_app, prefix="/graphql")  # GraphQL endpoint
-app.add_route("/", graphql_app)
+app.include_router(graphql_app)  # GraphQL endpoint
+
+app.include_router(create_api_key_routes(), prefix="/manage")  # API key routes
+
+app.include_router(create_admin_routes(), prefix="/admin")  # Admin routes
 
 if __name__ == "__main__":
     import uvicorn

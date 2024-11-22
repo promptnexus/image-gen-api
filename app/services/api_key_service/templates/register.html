@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h2>Register</h2>
+<form method="POST" action="/manage/auth/register" enctype="application/x-www-form-urlencoded">
+    <label for="username">Email:</label><br>
+    <input type="email" id="username" name="username" required><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+    <input type="submit" value="Register">
+</form>
+<a href="/manage/auth/login">Already have an account? Login here</a>
+{% endblock %}

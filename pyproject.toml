@@ -13,7 +13,7 @@ python = "^3.10"
 fastapi = "^0.104.0"
 strawberry-graphql = "^0.211.1"
 uvicorn = "^0.23.2"
-pydantic = "^2.4.2"
+pydantic = {extras = ["email"], version = "^2.10.0"}
 python-dotenv = "^1.0.1"
 diffusers = {extras = ["torch"], version = "^0.31.0"}
 transformers = "^4.46.2"
@@ -25,6 +25,11 @@ numpy = "<2.0"
 torch = "=2.4.0"
 torchvision = "0.19.0"
 rich = "^13.9.4"
+python-jose = "^3.3.0"
+fastapi-login = "^1.10.2"
+pocketbase = "^0.12.3"
+python-multipart = "^0.0.17"
+bcrypt = "^4.2.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"

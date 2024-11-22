@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}API Keys{% endblock %}
+
+{% block content %}
+<h1>{{ organization_name }}</h1>
+<h2>API Keys</h2>
+<ul>
+  {% for api_key in api_keys %}
+    <li>{{ api_key.name }} <a href="/manage/organizations/{{ organization_id }}/api-keys/{{ api_key.id }}/delete">Delete</a></li>
+  {% endfor %}
+</ul>
+
+<h3>Create a new API Key</h3>
+<form action="/manage/organizations/{{ organization_id }}/api-keys" method="post" enctype="application/x-www-form-urlencoded">
+  <label for="name">API Key Name:</label>
+  <input type="text" id="name" name="name" required>
+  <button type="submit">Create</button>
+</form>
+
+
+{% if new_api_key %}
+  <h3>New API Key Generated</h3>
+  <p><em>Note: This API key can only be viewed once. Please copy it for future reference.</em></p>
+  <span id="new-api-key">{{ new_api_key }}</span>
+  <button onclick="copyApiKey()">Copy API Key</button>
+  <script>
+    function copyApiKey() {
+      var copyText = document.getElementById("new-api-key").innerText;
+      navigator.clipboard.writeText(copyText).then(function() {
+        alert("API Key copied to clipboard");
+      }, function(err) {
+        alert("Failed to copy API Key");
+      });
+    }
+  </script>
+{% endif %}
+
+{% endblock %}

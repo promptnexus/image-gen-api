@@ -166,3 +166,10 @@ generated-docs/
 .DS_Store
 **/.DS_Store
 .env
+
+# PocketBase
+pb_data/
+pb_migrations/
+pb_public/
+pb_config.json
+pb_schema.json
