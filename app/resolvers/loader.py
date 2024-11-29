@@ -1,3 +1,4 @@
+import traceback
 import strawberry
 import importlib
 from pathlib import Path
@@ -31,6 +32,7 @@ def load_resolvers(
 ) -> list[Type]:
 
     resolver_classes = []
+    print(f"Loading {resolver_type}s from {base_path}")
 
     base_path = Path(base_path).resolve()
     app_root = base_path.parent.parent.resolve()
@@ -69,8 +71,12 @@ def load_resolvers(
                             status.mutation_resolvers.append(attr.__name__)
 
             except ImportError as e:
+                print("Import failed:")
+                traceback.print_exc()
                 status.failed_loads += 1
             except Exception as e:
+                print("Processing failed:")
+                traceback.print_exc()
                 status.failed_loads += 1
 
     return resolver_classes

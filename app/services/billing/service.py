@@ -1,20 +1,13 @@
-from datetime import datetime
 import os
-import time
 import traceback
 from app.services.api_key_service.database_service.pocketbase_service import (
     PocketBaseDatabaseService,
 )
 from app.services.billing.models import ComputeUsage
-import stripe
-from pydantic import BaseModel
-from typing import Optional
 
 
 class BillingService:
     def __init__(self, api_key: str):
-        stripe.api_key = api_key
-
         pb_url = os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
         pb_email = os.getenv("POCKETBASE_ADMIN_EMAIL")
         pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")

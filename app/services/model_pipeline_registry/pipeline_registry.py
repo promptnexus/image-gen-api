@@ -102,6 +102,8 @@ class PipelineRegistry:
             ModelType.MOCK,
             PipelineConfig(
                 pipeline_class=MockPipeline,
+                default_params={},
+                inference_params={},
             ),
         )
 

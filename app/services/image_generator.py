@@ -1,18 +1,12 @@
 import os
-from typing import Optional
-from PIL import Image
 import io
-from pathlib import Path
-from huggingface_hub import HfFolder
 
-from app.dependencies import get_billing_service
 from app.services import timer
-from app.services.billing.models import ComputeUsage
 from app.services.generator_service_config import build_gen_service_config
 from app.services.model_loaders.load_model import load_model
 from app.services.model_pipeline_registry.pipeline_registry import PipelineRegistry
-from app.services.utils import merge_inference_params
-from app.types.enums import ModelType
+from app.services.utils import get_bytes, merge_inference_params
+from app.types.billing_dependency import get_billing_service
 from app.types.image_generation_input import ImageGenerationInput
 import traceback
 
@@ -46,6 +40,7 @@ class ImageGenerationService:
             print(f"Model loaded: {image_gen_input.model_type}")
 
             pipeline_config = PipelineRegistry.get(image_gen_input.model_type)
+
             print(f"Pipeline config retrieved: {pipeline_config}")
 
             inference_params = merge_inference_params(
@@ -64,9 +59,7 @@ class ImageGenerationService:
             print("Image generated successfully")
 
             # Convert PIL Image to bytes
-            byte_stream = io.BytesIO()
-            image.save(byte_stream, format=image_gen_input.image_format.value)
-            print("Image converted to bytes")
+            byte_stream = get_bytes(image_gen_input, image)
 
             self.billing_service.record_billing(inference_time, image_gen_input.org_id)
 

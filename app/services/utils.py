@@ -1,3 +1,4 @@
+import io
 import torch
 
 from app.types.image_generation_input import ImageGenerationInput
@@ -40,3 +41,12 @@ def merge_inference_params(
         inference_params["num_inference_steps"] = input_params.num_inference_steps
 
     return inference_params
+
+
+def get_bytes(image_gen_input, image):
+    byte_stream = io.BytesIO()
+    image.save(byte_stream, format=image_gen_input.image_format.value)
+
+    print("Image converted to bytes")
+
+    return byte_stream
