@@ -1,9 +1,15 @@
 from typing import Dict
+from app.services.model_pipeline_registry.custom_pipelines.mock_pipeline import (
+    MockPipeline,
+)
 from app.services.model_pipeline_registry.types import PipelineConfig
 from app.types.enums import ModelType
 from diffusers import StableDiffusionPipeline, FluxPipeline
 from diffusers.utils import pt_to_pil
-from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline import DeepFloydCombinedPipeline
+from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline import (
+    DeepFloydCombinedPipeline,
+)
+
 
 class PipelineRegistry:
     _registry: Dict[ModelType, PipelineConfig] = {}
@@ -76,7 +82,7 @@ class PipelineRegistry:
                 "variant": "fp16",
                 "text_encoder": None,
             },
-            "stage3": {}
+            "stage3": {},
         }
 
         df_inference_params = {
@@ -88,8 +94,15 @@ class PipelineRegistry:
             PipelineConfig(
                 pipeline_class=DeepFloydCombinedPipeline,
                 default_params=df_default_params,
-                inference_params=df_inference_params
-            )
+                inference_params=df_inference_params,
+            ),
+        )
+
+        cls.register(
+            ModelType.MOCK,
+            PipelineConfig(
+                pipeline_class=MockPipeline,
+            ),
         )
 
 

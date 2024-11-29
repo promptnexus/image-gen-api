@@ -58,6 +58,7 @@ enum ModelType {
   FLUX_1_DEV
   FLUX_1_SCHNELL
   DEEPFLOYD_V1
+  MOCK
 }
 
 type Mutation {

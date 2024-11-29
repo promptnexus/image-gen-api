@@ -9,7 +9,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 fastapi = "^0.104.0"
 strawberry-graphql = "^0.211.1"
 uvicorn = "^0.23.2"
@@ -30,6 +30,8 @@ fastapi-login = "^1.10.2"
 pocketbase = "^0.12.3"
 python-multipart = "^0.0.17"
 bcrypt = "^4.2.1"
+paddle-python-sdk = "^1.1.2"
+stripe = "^11.3.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"

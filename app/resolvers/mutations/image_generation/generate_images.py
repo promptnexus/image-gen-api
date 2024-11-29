@@ -29,7 +29,9 @@ class GenerateImageMutations:
 
             results = []
             for _ in range(image_gen_input.num_images):
-                image_bytes = image_service.generate(image_gen_input=image_gen_input)
+                image_bytes = await image_service.generate(
+                    image_gen_input=image_gen_input
+                )
 
                 image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 

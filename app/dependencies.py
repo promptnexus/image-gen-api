@@ -22,8 +22,15 @@
 
 
 # app/dependencies.py
+from app.services.billing.service import BillingService
+from app.services.billing.stripe.stripe_billing_service import StripeBillingService
 from app.services.image_generator import ImageGenerationService
+import os
 
 
 def get_image_generation_service() -> ImageGenerationService:
     return ImageGenerationService()
+
+
+def get_billing_service() -> BillingService:
+    return StripeBillingService()

@@ -1,51 +1,41 @@
-from decimal import Decimal
 from datetime import datetime
-from .interfaces import BillingProvider
-from .cost_calculator import CostCalculator, ComputeUsage
-from .models import BillingRecord
+import os
+import time
+import traceback
+from app.services.api_key_service.database_service.pocketbase_service import (
+    PocketBaseDatabaseService,
+)
+from app.services.billing.models import ComputeUsage
+import stripe
+from pydantic import BaseModel
+from typing import Optional
 
 
 class BillingService:
-    def __init__(
-        self,
-        billing_provider: BillingProvider,
-        cost_calculator: CostCalculator,
-        markup_rate: Decimal = Decimal("1.01"),
-    ):
-        self.billing_provider = billing_provider
-        self.cost_calculator = cost_calculator
-        self.markup_rate = markup_rate
+    def __init__(self, api_key: str):
+        stripe.api_key = api_key
 
-    async def process_charge(
-        self,
-        customer_id: str,
-        compute_time: float,
-        image_size: str,
-        instance_type: str = "g4dn.xlarge",
-    ) -> BillingRecord:
-        # Calculate base cost
-        usage = ComputeUsage(
-            compute_time=compute_time,
-            image_size=image_size,
-            instance_type=instance_type,
-        )
-        base_cost = await self.cost_calculator.calculate_cost(usage)
+        pb_url = os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
+        pb_email = os.getenv("POCKETBASE_ADMIN_EMAIL")
+        pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
+        self.db_service = PocketBaseDatabaseService(pb_url, pb_email, pb_password)
 
-        # Apply markup
-        final_cost = (base_cost * self.markup_rate).quantize(Decimal("0.0001"))
+    def record_billing(self, duration: float, api_key: str):
+        try:
+            customer_id = self.db_service.get_organization_customer_id_by_api_key(
+                api_key
+            )
 
-        # Create charge
-        transaction_id = await self.billing_provider.charge_customer(
-            customer_id=customer_id,
-            amount=final_cost,
-            description=f"Image generation ({image_size}) on {instance_type} - {compute_time}s",
-        )
+            self.record_compute_time(
+                ComputeUsage(
+                    customer_id=customer_id,
+                    milliseconds=duration,
+                )
+            )
+        except Exception as e:
+            print(f"Error recording billing: {e}")
+            traceback.print_exc()
+            raise
 
-        return BillingRecord(
-            customer_id=customer_id,
-            compute_time=compute_time,
-            image_size=image_size,
-            base_cost=base_cost,
-            final_cost=final_cost,
-            transaction_id=transaction_id,
-        )
+    async def record_compute_time(self, usage: ComputeUsage):
+        raise NotImplementedError

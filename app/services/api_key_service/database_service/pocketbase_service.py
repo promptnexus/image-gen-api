@@ -15,6 +15,27 @@ class PocketBaseDatabaseService(DatabaseService):
         self.client = pocketbase.Client(pb_url)
         self.client.admins.auth_with_password(pb_email, pb_password)
 
+    # START: Billing Service access Customer ID from Organization
+    def get_organization_by_api_key(self, api_key):
+        api_key_data = self.find_api_key_data(api_key)
+
+        if api_key_data:
+            records = self.client.collection("organizations").get_full_list(
+                query_params={"filter": f'id="{api_key_data.organization_id}"'}
+            )
+            if records:
+                return records[0]
+
+        return None
+
+    def get_organization_customer_id_by_api_key(self, api_key):
+        organization = self.get_organization_by_api_key(api_key)
+        if organization:
+            return organization.customer_id
+        return None
+
+    # END: Billing Service access Customer ID from Organization
+
     def get_organization(self, org_id, user_id):
         try:
             records = self.client.collection("organizations").get_full_list(
