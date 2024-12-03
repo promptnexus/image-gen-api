@@ -6,6 +6,7 @@ from app.services.api_key_service.database_service.pocketbase_service import (
 )
 import os
 from typing import Optional
+import logging
 
 
 class ApiKeyAppDriver:
@@ -17,7 +18,7 @@ class ApiKeyAppDriver:
         jwt_key: Optional[str] = None,
     ):
         # Initialize PocketBase connection details
-        self.pb_url = pb_url or os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
+        self.pb_url = pb_url or os.getenv("POCKETBASE_URL", "http://localhost:8090")
         self.pb_email = pb_email or os.getenv("POCKETBASE_ADMIN_EMAIL")
         self.pb_password = pb_password or os.getenv("POCKETBASE_ADMIN_PASSWORD")
 
@@ -33,6 +34,13 @@ class ApiKeyAppDriver:
         os.environ["JWT_ENCODER_KEY"] = self.jwt_key
 
     def create_routes(self):
+        # Set up logging
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+
+        # Log the database service initialization
+        logger.info(f"Initializing PocketBaseDatabaseService with URL: {self.pb_url}, Email: {self.pb_email}")
+
         # Initialize database service
         db_service = PocketBaseDatabaseService(
             self.pb_url, self.pb_email, self.pb_password

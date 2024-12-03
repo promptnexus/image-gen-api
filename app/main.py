@@ -7,6 +7,7 @@ from strawberry.fastapi import GraphQLRouter
 from pathlib import Path
 import subprocess
 
+from app.services.customer_management_service.utils import get_new_customer_management_router
 from fastapi_login.exceptions import InvalidCredentialsException
 
 from app.schema import schema
@@ -117,6 +118,8 @@ app.include_router(graphql_app)  # GraphQL endpoint
 app.include_router(create_api_key_routes(), prefix="/manage")  # API key routes
 
 app.include_router(create_admin_routes(), prefix="/admin")  # Admin routes
+
+app.include_router(get_new_customer_management_router(), prefix="/customer-management")
 
 if __name__ == "__main__":
     import uvicorn

@@ -16,7 +16,7 @@ from app.services.api_key_service.database_service.pocketbase_service import (
 def create_admin_routes() -> APIRouter:
     router = APIRouter()
 
-    pb_url = os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
+    pb_url = os.getenv("POCKETBASE_URL", "http://localhost:8090")
     pb_email = os.getenv("POCKETBASE_ADMIN_EMAIL")
     pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
     db_service = PocketBaseDatabaseService(pb_url, pb_email, pb_password)

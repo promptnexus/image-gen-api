@@ -8,7 +8,7 @@ from app.services.billing.models import ComputeUsage
 
 class BillingService:
     def __init__(self, api_key: str):
-        pb_url = os.getenv("POCKETBASE_URL", "http://127.0.0.1:8090")
+        pb_url = os.getenv("POCKETBASE_URL", "http://localhost:8090")
         pb_email = os.getenv("POCKETBASE_ADMIN_EMAIL")
         pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
         self.db_service = PocketBaseDatabaseService(pb_url, pb_email, pb_password)
