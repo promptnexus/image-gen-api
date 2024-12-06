@@ -6,10 +6,13 @@ from jose import jwt
 
 import stripe
 from typing import Optional
+
 from app.services.api_key_service.database_service.pocketbase_service import (
     PocketBaseDatabaseService,
 )
+
 from fastapi_login import LoginManager
+import json
 
 
 class CustomerManagementService:
@@ -60,17 +63,17 @@ class CustomerManagementService:
         pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
         self.db_service = PocketBaseDatabaseService(pb_url, pb_email, pb_password)
 
-    async def get_customer_id(self, org_id: str) -> Optional[str]:
+    def get_customer_id(self, org_id: str) -> Optional[str]:
         """Get stripe customer ID for organization"""
         try:
-            return self.db_service.get_organization_customer_id(org_id)
+            return self.db_service.get_customer_id(org_id)
         except Exception:
             return None
 
-    async def set_customer_id(self, org_id: str, customer_id: str):
+    def set_customer_id(self, org_id: str, customer_id: str):
         """Save stripe customer ID for organization"""
         try:
-            self.db_service.set_organization_customer_id(org_id, customer_id)
+            self.db_service.set_customer_id(org_id, customer_id)
         except Exception as e:
             print(f"Error setting customer ID: {e}")
             raise HTTPException(status_code=500, detail="Failed to save customer ID")
@@ -80,7 +83,7 @@ class CustomerManagementService:
     ) -> str:
         """Create either a setup or portal session based on customer status"""
         try:
-            existing_customer = await self.get_customer_id(org_id)
+            existing_customer = self.get_customer_id(org_id)
 
             if existing_customer:
                 session = stripe.billing_portal.Session.create(
@@ -94,6 +97,7 @@ class CustomerManagementService:
                     cancel_url=cancel_url,
                     customer_email=user_email,
                     metadata={"organization_id": org_id},
+                    customer_creation="always",
                 )
 
             return session.url
@@ -114,10 +118,23 @@ class CustomerManagementService:
         if event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
             org_id = session.get("metadata", {}).get("organization_id")
+
             customer_id = session.get("customer")
 
+            # def print_json_tree(data, indent=0):
+            #     for key, value in data.items():
+            #         print(" " * indent + str(key) + ":")
+            #         if isinstance(value, dict):
+            #             print_json_tree(value, indent + 2)
+            #         else:
+            #             print(" " * (indent + 2) + str(value))
+
+            # print_json_tree(event)
+
             if org_id and customer_id:
-                await self.set_customer_id(org_id, customer_id)
+                print(f"Setting customer ID: {customer_id} for org: {org_id}")
+
+                self.set_customer_id(org_id, customer_id)
 
         return {"status": "success"}
 

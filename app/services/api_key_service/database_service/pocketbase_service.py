@@ -216,7 +216,7 @@ class PocketBaseDatabaseService(DatabaseService):
     def get_customer_id(self, org_id: str) -> Optional[str]:
         org_data = self.client.collection("organizations").get_one(org_id)
 
-        return org_data["customer_id"]
+        return org_data.customer_id
 
     def set_customer_id(self, org_id: str, customer_id: str):
         org_record = self.client.collection("organizations").get_one(org_id)
@@ -226,7 +226,7 @@ class PocketBaseDatabaseService(DatabaseService):
             print(msg)
             raise Exception(msg)
 
-        if org_record.get("customer_id"):
+        if org_record.customer_id:
             msg = f"Customer ID already exists for organization {org_id}. Overwriting is not allowed. Verify manually."
             print(msg)
             raise Exception(msg)
