@@ -56,7 +56,7 @@ class ApiKeyManager:
     def add_user_to_organization(self, org_id, user_email):
         return self.db_service.add_user_to_organization(org_id, user_email)
 
-    def get_organization(self, org_id, user_id):
+    def get_organization(self, org_id, user_id) -> Organization:
         return self.db_service.get_organization(org_id, user_id)
 
     def get_organizations(self, user_email):

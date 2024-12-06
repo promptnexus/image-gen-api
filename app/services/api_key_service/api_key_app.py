@@ -38,7 +38,7 @@ class ApiKeyApp:
             if not email:  # Handle cases where email is None or invalid
                 raise HTTPException(
                     status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-                    headers={"Location": "/auth/login"},
+                    headers={"Location": "/manage/auth/login"},
                 )
             return self.manager.db_service.get_user(email)
 
@@ -227,6 +227,8 @@ class ApiKeyApp:
                     "organization_id": org_id,
                     "organization_name": org.name,
                     "user_email": user.email,
+                    "has_customer_info": org.customer_id is not None
+                    and len(org.customer_id) > 0,
                 },
             )
 
@@ -260,6 +262,8 @@ class ApiKeyApp:
                     "organization_name": org.name,
                     "user_email": user.email,
                     "new_api_key": api_key,
+                    "has_customer_info": org.customer_id is not None
+                    and len(org.customer_id) > 0,
                 },
             )
 

@@ -37,7 +37,7 @@ class PocketBaseDatabaseService(DatabaseService):
 
     # END: Billing Service access Customer ID from Organization
 
-    def get_organization(self, org_id, user_id):
+    def get_organization(self, org_id, user_id) -> Organization:
         try:
             records = self.client.collection("organizations").get_full_list(
                 query_params={
@@ -218,7 +218,6 @@ class PocketBaseDatabaseService(DatabaseService):
 
         return org_data["customer_id"]
 
-
     def set_customer_id(self, org_id: str, customer_id: str):
         org_record = self.client.collection("organizations").get_one(org_id)
 
@@ -226,16 +225,16 @@ class PocketBaseDatabaseService(DatabaseService):
             msg = f"Organization with ID {org_id} not found."
             print(msg)
             raise Exception(msg)
-        
 
         if org_record.get("customer_id"):
-            msg = (f"Customer ID already exists for organization {org_id}. Overwriting is not allowed. Verify manually.")
+            msg = f"Customer ID already exists for organization {org_id}. Overwriting is not allowed. Verify manually."
             print(msg)
             raise Exception(msg)
-        
-        update_org = self.client.collection("organizations").update(org_id, {"customer_id": customer_id})
-        
+
+        update_org = self.client.collection("organizations").update(
+            org_id, {"customer_id": customer_id}
+        )
+
         print(f"Succesfully set customer ID for organization {org_id}")
 
         return update_org
-       

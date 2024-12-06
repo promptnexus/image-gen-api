@@ -3,6 +3,7 @@ from app.services.api_key_service.models.apikey import AdminApiKey, ApiKey
 from app.services.api_key_service.models.organization import Organization
 from app.services.api_key_service.models.user import User
 
+
 class DatabaseService:
     def get_organization_by_api_key(self, api_key):
         raise NotImplementedError
@@ -10,7 +11,7 @@ class DatabaseService:
     def get_organization_customer_id_by_api_key(self, api_key):
         raise NotImplementedError
 
-    def get_organization(self, org_id, user_id):
+    def get_organization(self, org_id, user_id) -> Organization:
         raise NotImplementedError
 
     def set_api_key(self, org_id, api_key, key_name) -> ApiKey:
