@@ -1,3 +1,4 @@
+from typing import Optional
 from app.services.api_key_service.database_service.database_service import (
     DatabaseService,
 )
@@ -211,3 +212,30 @@ class PocketBaseDatabaseService(DatabaseService):
         except Exception as e:
             print(f"An error occurred while deleting the API key: {e}")
             return False
+
+    def get_customer_id(self, org_id: str) -> Optional[str]:
+        org_data = self.client.collection("organizations").get_one(org_id)
+
+        return org_data["customer_id"]
+
+
+    def set_customer_id(self, org_id: str, customer_id: str):
+        org_record = self.client.collection("organizations").get_one(org_id)
+
+        if not org_record:
+            msg = f"Organization with ID {org_id} not found."
+            print(msg)
+            raise Exception(msg)
+        
+
+        if org_record.get("customer_id"):
+            msg = (f"Customer ID already exists for organization {org_id}. Overwriting is not allowed. Verify manually.")
+            print(msg)
+            raise Exception(msg)
+        
+        update_org = self.client.collection("organizations").update(org_id, {"customer_id": customer_id})
+        
+        print(f"Succesfully set customer ID for organization {org_id}")
+
+        return update_org
+       

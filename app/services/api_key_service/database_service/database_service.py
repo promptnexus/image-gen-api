@@ -1,7 +1,7 @@
+from typing import Optional
 from app.services.api_key_service.models.apikey import AdminApiKey, ApiKey
 from app.services.api_key_service.models.organization import Organization
 from app.services.api_key_service.models.user import User
-
 
 class DatabaseService:
     def get_organization_by_api_key(self, api_key):
@@ -56,4 +56,12 @@ class DatabaseService:
         raise NotImplementedError
 
     def delete_api_key(self, id):
+        raise NotImplementedError
+
+    def get_customer_id(self, org_id: str) -> Optional[str]:
+        """Get stripe customer ID for organization"""
+        raise NotImplementedError
+
+    def set_customer_id(self, org_id: str, customer_id: str):
+        """Save stripe customer ID for organization"""
         raise NotImplementedError
