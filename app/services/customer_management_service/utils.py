@@ -3,8 +3,10 @@ from app.services.customer_management_service.customer_management_service import
 )
 import os
 
+from app.services.api_key_service.api_key_manager import ApiKeyManager
 
-def setup_customer_management():
+
+def setup_customer_management(api_key_manager: ApiKeyManager):
     """Initialize customer management service and routes"""
     stripe_secret_key = os.getenv("STRIPE_API_KEY")
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
@@ -13,7 +15,9 @@ def setup_customer_management():
         raise ValueError("Stripe secret key and webhook secret must be provided")
 
     cms = CustomerManagementService(
-        stripe_secret_key=stripe_secret_key, webhook_secret=webhook_secret
+        stripe_secret_key=stripe_secret_key,
+        webhook_secret=webhook_secret,
+        api_key_manager=api_key_manager,
     )
 
     return cms

@@ -7,6 +7,8 @@ from jose import jwt
 import stripe
 from typing import Optional
 
+from app.services.api_key_service.admin.dependencies import AdminKeyDependency
+from app.services.api_key_service.api_key_manager import ApiKeyManager
 from app.services.api_key_service.database_service.pocketbase_service import (
     PocketBaseDatabaseService,
 )
@@ -16,10 +18,18 @@ import json
 
 
 class CustomerManagementService:
-    def __init__(self, stripe_secret_key: str, webhook_secret: str):
+    def __init__(
+        self,
+        stripe_secret_key: str,
+        webhook_secret: str,
+        api_key_manager: ApiKeyManager,
+    ):
         stripe.api_key = stripe_secret_key
         self.webhook_secret = webhook_secret
         self._init_database()
+
+        self.manager = api_key_manager
+        self.admin_dependency = AdminKeyDependency(api_key_manager)
 
         self.login_manager = LoginManager(
             secret=os.getenv("JWT_ENCODER_KEY"),
@@ -173,6 +183,27 @@ class CustomerManagementService:
         ):
             payload = await request.body()
             return await self.set_customer_id_from_checkout(payload, stripe_signature)
+
+        @router.post("/organizations/{org_id}/set-customer-id")
+        async def set_customer_id(
+            request: Request,
+            org_id: str,
+            customer_id: str,
+            admin_api_key: str = Depends(self.admin_dependency),
+        ):
+            try:
+                self.set_customer_id(org_id, customer_id)
+                return JSONResponse(status_code=200, content={"status": "success"})
+            except HTTPException as e:
+                if e.status_code == 401:
+                    return JSONResponse(
+                        status_code=404, content={"detail": "Not found"}
+                    )
+                return JSONResponse(
+                    status_code=e.status_code, content={"detail": str(e)}
+                )
+            except Exception as e:
+                return JSONResponse(status_code=500, content={"detail": str(e)})
 
         return router
 
