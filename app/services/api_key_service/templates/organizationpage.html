@@ -37,3 +37,15 @@
 {% endif %}
 
 {% endblock %}
+
+
+{% if not has_customer_info %}
+  <h3>You must enter billing details to use the API</h3>
+{% endif %}
+<a href="/manage/organizations/{{ organization_id }}/billing" role="button">
+  {% if has_customer_info %}
+    Manage Billing Details
+  {% else %}
+    Enter Billing Details
+  {% endif %}
+</a>
