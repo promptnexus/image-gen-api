@@ -27,10 +27,12 @@ class OrchestrationRoutes:
             Creates a new user, organization, and API key in one operation.
             Handles cleanup if any step fails.
             """
+            print("request", request)
 
             email = request.email
             organization_name = request.organization_name
             api_key_name = request.api_key_name
+            customer_id = request.customer_id
 
             if not email or not organization_name or not api_key_name:
                 raise HTTPException(
@@ -44,6 +46,7 @@ class OrchestrationRoutes:
                         email=email,
                         organization_name=organization_name,
                         api_key_name=api_key_name,
+                        customer_id=customer_id,
                     )
                 )
                 return result

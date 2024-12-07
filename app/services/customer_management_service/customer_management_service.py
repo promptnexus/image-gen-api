@@ -189,7 +189,7 @@ class CustomerManagementService:
             request: Request,
             org_id: str,
             customer_id: str,
-            admin_api_key: str = Depends(self.admin_dependency),
+            admin_api_key: str = Depends(self.admin_dependency.verify_admin_api_key),
         ):
             try:
                 self.set_customer_id(org_id, customer_id)

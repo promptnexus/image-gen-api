@@ -1,4 +1,5 @@
 # admin/models/requests.py
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -19,3 +20,4 @@ class SetupOrganizationRequest(BaseModel):
     email: EmailStr
     organization_name: str
     api_key_name: str
+    customer_id: Optional[str] = None

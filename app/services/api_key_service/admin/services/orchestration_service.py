@@ -24,7 +24,11 @@ class OrchestrationService:
         self.db_service = api_key_manager.db_service
 
     async def create_user_organization_with_key(
-        self, email: EmailStr, organization_name: str, api_key_name: str
+        self,
+        email: EmailStr,
+        organization_name: str,
+        api_key_name: str,
+        customer_id: str,
     ) -> SuccessResponse:
         """
         Orchestrates the creation of a user, their organization, and an API key.
@@ -70,6 +74,23 @@ class OrchestrationService:
 
             logger.info(f"Successfully created organization with ID: {created_org.id}")
 
+            # Set customer ID if provided
+            if customer_id is not None and len(customer_id) > 0:
+                try:
+                    logger.info(
+                        f"Setting customer ID '{customer_id}' for organization {created_org.id}"
+                    )
+                    self.db_service.set_customer_id(created_org.id, customer_id)
+
+                    logger.info(
+                        f"Successfully set customer ID to [{customer_id}] for created organization {created_org.id}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to set customer ID: {str(e)}")
+                    self._handle_cleanup_and_error(
+                        e, created_user, created_org, created_api_key
+                    )
+
             # Step 3: Generate API key
             logger.info(
                 f"Generating API key '{api_key_name}' for organization {created_org.id}"
@@ -93,9 +114,11 @@ class OrchestrationService:
                         raw_key=created_api_key.raw_key,
                         name=created_api_key.name,
                         id=created_api_key.id,
+                        organization_id=created_api_key.organization_id,
                     ),
                     organization_id=created_org.id,
                     user_id=created_user.id,
+                    customer_id=customer_id,
                 ),
             )
 
