@@ -7,7 +7,9 @@ from strawberry.fastapi import GraphQLRouter
 from pathlib import Path
 import subprocess
 
-from app.services.customer_management_service.utils import get_new_customer_management_router
+from app.services.customer_management_service.utils import (
+    get_new_customer_management_router,
+)
 from fastapi_login.exceptions import InvalidCredentialsException
 
 from app.schema import schema
@@ -22,8 +24,6 @@ from rich.console import Console
 from rich.table import Table
 
 load_dotenv()
-
-print(isinstance(InvalidCredentialsException, type))  # Should print `True`
 
 
 def initialize_torch_env():
