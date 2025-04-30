@@ -1,7 +1,7 @@
 import os
 import io
 
-from app.services import timer
+from app.services.timer import timer
 from app.services.generator_service_config import build_gen_service_config
 from app.services.model_loaders.load_model import load_model
 from app.services.model_pipeline_registry.pipeline_registry import PipelineRegistry
@@ -27,10 +27,14 @@ class ImageGenerationService:
     def generate(
         self,
         image_gen_input: ImageGenerationInput,
+        api_key: str,
         **kwargs,
     ) -> bytes:
         """Generate an image and return raw bytes"""
         try:
+            print("generate")
+            print(f"API Key: {api_key}")
+
             print("Starting image generation process...")
 
             print("Registered pipelines:", PipelineRegistry._registry)
@@ -61,11 +65,21 @@ class ImageGenerationService:
             # Convert PIL Image to bytes
             byte_stream = get_bytes(image_gen_input, image)
 
-            self.billing_service.record_billing(inference_time, image_gen_input.org_id)
+            print(
+                f"Recording billing with inference_time={inference_time.value}, api_key={api_key}"
+            )
 
-            print(f"Inference took {inference_time:.2f}ms")
+            self.billing_service.record_billing(inference_time.value, api_key)
 
-            return byte_stream.getvalue()
+            print(f"Inference took {inference_time.value:.2f}ms")
+
+            # print(byte_stream.getvalue())
+
+            final_bytes = byte_stream.getvalue()
+
+            print("returning final_bytes nextttttt")
+
+            return final_bytes
         except Exception as e:
             print(f"Error generating image: {e}")
             traceback.print_exc()

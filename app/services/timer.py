@@ -13,24 +13,29 @@ def timer(device=None):
 
         device = pick_device()
 
+    class TimerResult:
+        value: float = 0
+
+    result = TimerResult()
+
     if device == "cuda":
         start = CudaEvent(enable_timing=True)
         end = CudaEvent(enable_timing=True)
         start.record()
-        yield
+        yield result
         end.record()
         torch.cuda.synchronize()
-        return start.elapsed_time(end)
+        result.value = start.elapsed_time(end)
     elif device == "mps":
         start = MpsEvent(enable_timing=True)
         end = MpsEvent(enable_timing=True)
         start.record()
-        yield
+        yield result
         end.record()
         torch.mps.synchronize()
-        return start.elapsed_time(end)
+        result.value = start.elapsed_time(end)
     else:
         start = time.perf_counter()
-        yield
+        yield result
         end = time.perf_counter()
-        return (end - start) * 1000  # Convert to ms to match GPU timing
+        result.value = (end - start) * 1000  # Convert to ms to match GPU timing

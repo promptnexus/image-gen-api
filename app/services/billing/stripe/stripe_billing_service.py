@@ -17,7 +17,7 @@ class StripeBillingService(BillingService):
         meter_event = stripe.billing.MeterEvent.create(
             event_name=event_name,
             payload={
-                "value": str(usage.milliseconds),
+                "value": usage.milliseconds,
                 "stripe_customer_id": usage.customer_id,
             },
         )

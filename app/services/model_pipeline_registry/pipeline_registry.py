@@ -102,7 +102,7 @@ class PipelineRegistry:
             ModelType.MOCK,
             PipelineConfig(
                 pipeline_class=MockPipeline,
-                default_params={},
+                default_params={"device": "mps"},
                 inference_params={},
             ),
         )

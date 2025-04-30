@@ -7,7 +7,7 @@ from app.services.billing.models import ComputeUsage
 
 
 class BillingService:
-    def __init__(self, api_key: str):
+    def __init__(self):
         pb_url = os.getenv("POCKETBASE_URL", "http://localhost:8090")
         pb_email = os.getenv("POCKETBASE_ADMIN_EMAIL")
         pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
@@ -22,7 +22,7 @@ class BillingService:
             self.record_compute_time(
                 ComputeUsage(
                     customer_id=customer_id,
-                    milliseconds=duration,
+                    milliseconds=round(duration),
                 )
             )
         except Exception as e:

@@ -3,6 +3,14 @@ import time
 import torch
 
 
+from collections import namedtuple
+from PIL import Image
+import numpy as np
+
+# Define the structure
+Response = namedtuple("Response", ["images"])
+
+
 class MockPipeline:
     """MockPipeline is a mock implementation of a model pipeline used for testing purposes.
     It simulates the loading and processing times to help test timers around the service.
@@ -39,12 +47,19 @@ class MockPipeline:
         default_params = default_params or {}
 
         print("Initializing pipeline...")
-        time.sleep(10)  # Simulate loading time
+        time.sleep(1)  # Simulate loading time
 
     def enable_model_cpu_offload(self):
         print("Model CPU offload enabled")
 
     def __call__(self, prompt, **inference_params):
         print(f"Processing prompt: {prompt}")
-        time.sleep(10)  # Simulate processing time
-        return "Generated image"
+        time.sleep(1)  # Simulate processing time
+
+        # Create a small mock PIL image (10x10 black square)
+        mock_image = Image.fromarray(np.zeros((10, 10, 3), dtype=np.uint8))
+
+        return Response(images=[mock_image])
+
+    def to(self, _):
+        return self
