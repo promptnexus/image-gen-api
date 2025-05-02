@@ -21,4 +21,4 @@ class ImageGenerationInput:
         description="Type of model to use for image generation",
     )
 
-    num_inference_steps: Optional[int] = 50
+    num_inference_steps: Optional[int] = 2

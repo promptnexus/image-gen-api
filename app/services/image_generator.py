@@ -24,7 +24,7 @@ class ImageGenerationService:
 
         self.billing_service = get_billing_service()
 
-    def generate(
+    async def generate(
         self,
         image_gen_input: ImageGenerationInput,
         api_key: str,
@@ -69,7 +69,7 @@ class ImageGenerationService:
                 f"Recording billing with inference_time={inference_time.value}, api_key={api_key}"
             )
 
-            self.billing_service.record_billing(inference_time.value, api_key)
+            await self.billing_service.record_billing(inference_time.value, api_key)
 
             print(f"Inference took {inference_time.value:.2f}ms")
 

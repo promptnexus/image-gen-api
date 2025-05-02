@@ -13,13 +13,13 @@ class BillingService:
         pb_password = os.getenv("POCKETBASE_ADMIN_PASSWORD")
         self.db_service = PocketBaseDatabaseService(pb_url, pb_email, pb_password)
 
-    def record_billing(self, duration: float, api_key: str):
+    async def record_billing(self, duration: float, api_key: str):
         try:
             customer_id = self.db_service.get_organization_customer_id_by_api_key(
                 api_key
             )
 
-            self.record_compute_time(
+            await self.record_compute_time(
                 ComputeUsage(
                     customer_id=customer_id,
                     milliseconds=round(duration),
