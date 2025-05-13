@@ -55,7 +55,7 @@ class GenerateImageMutations:
                 print("we're in generate")
 
                 try:
-                    image_bytes = await image_service.generate(
+                    image_bytes, image_url = await image_service.generate(
                         image_gen_input=image_gen_input,
                         api_key=api_key,
                     )

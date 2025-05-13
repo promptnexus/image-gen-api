@@ -9,6 +9,8 @@ from app.services.utils import get_bytes, merge_inference_params
 from app.types.billing_dependency import get_billing_service
 from app.types.image_generation_input import ImageGenerationInput
 import traceback
+import boto3
+import uuid
 
 
 class ImageGenerationService:
@@ -29,7 +31,7 @@ class ImageGenerationService:
         image_gen_input: ImageGenerationInput,
         api_key: str,
         **kwargs,
-    ) -> bytes:
+    ) -> tuple[bytes, str]:
         """Generate an image and return raw bytes"""
         try:
             print("generate")
@@ -77,9 +79,26 @@ class ImageGenerationService:
 
             final_bytes = byte_stream.getvalue()
 
+            # Upload to Cloudflare R2
+            r2_client = boto3.client(
+                "s3",
+                endpoint_url=os.getenv("R2_ENDPOINT_URL"),
+                aws_access_key_id=os.getenv("R2_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("R2_SECRET_ACCESS_KEY"),
+                region_name=os.getenv("R2_REGION_NAME"),
+            )
+
+            object_key = f"images/{uuid.uuid4()}.png"
+            r2_client.upload_fileobj(
+                io.BytesIO(final_bytes), os.getenv("R2_BUCKET_NAME"), object_key
+            )
+
+            image_url = f"{os.getenv('R2_PUBLIC_URL')}/{object_key}"
+            print(f"Image uploaded to: {image_url}")
+
             print("returning final_bytes nextttttt")
 
-            return final_bytes
+            return (final_bytes, image_url)
         except Exception as e:
             print(f"Error generating image: {e}")
             traceback.print_exc()
