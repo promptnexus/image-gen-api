@@ -59,6 +59,10 @@ class ImageGenerationService:
 
             image = None
 
+            print(
+                f"\033[94mGenerating an image with Prompt:  {image_gen_input.prompt}\033[0m"
+            )
+
             with timer(self.config.device) as inference_time:
                 image = model(image_gen_input.prompt, **inference_params).images[0]
 
