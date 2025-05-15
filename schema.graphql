@@ -24,7 +24,7 @@ input ImageGenerationInput {
 
   """Type of model to use for image generation"""
   modelType: ModelType! = STABLE_V2_1
-  numInferenceSteps: Int = 50
+  numInferenceSteps: Int = null
 }
 
 type ImageGenerationResponse {
@@ -42,6 +42,7 @@ type ImageGenerationResult {
   width: Int!
   height: Int!
   style: ImageStyle!
+  url: String
 }
 
 enum ImageStyle {
