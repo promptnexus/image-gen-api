@@ -13,6 +13,7 @@ class ImageGenerationResult:
     width: int
     height: int
     style: ImageStyle
+    url: Optional[str] = None
 
 
 @strawberry.type

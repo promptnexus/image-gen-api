@@ -62,13 +62,14 @@ class GenerateImageMutations:
 
                 except Exception as e:
                     print(f"Error generating image: {e}")
-                    print(f"WHAT THE FUCk IS HAPPENING: {e}")
                     raise
 
-                print("printing an image")
-                print(f"Image bytes: {image_bytes}")
+                # print("printing an image")
+                # print(f"Image bytes: {image_bytes}")
 
                 image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+
+                print(f"Image url: {image_url}")
 
                 result = ImageGenerationResult(
                     id=str(uuid.uuid4()),
@@ -79,6 +80,7 @@ class GenerateImageMutations:
                     width=image_gen_input.width,
                     height=image_gen_input.height,
                     style=image_gen_input.style,
+                    url=image_url,
                 )
 
                 results.append(result)
@@ -90,6 +92,7 @@ class GenerateImageMutations:
                 print(f"  Format: {result.image_format}")
                 print(f"  Dimensions: {result.width}x{result.height}")
                 print(f"  Style: {result.style}")
+                print(f"  Image URL: {result.url}")
                 print("----------------------------------------")
 
             return ImageGenerationResponse(success=True, results=results)
