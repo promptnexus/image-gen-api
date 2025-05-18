@@ -5,6 +5,9 @@ on:
     branches:
       - master
   workflow_dispatch:
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
 
 jobs:
   deploy:
@@ -21,6 +24,7 @@ jobs:
           aws-region: us-east-1
         env:
           ACTIONS_STEP_DEBUG: true
+
       - name: Print GitHub context
         run: |
           echo "Repo: ${{ github.repository }}"
