@@ -21,6 +21,10 @@ jobs:
           aws-region: us-east-1
         env:
           ACTIONS_STEP_DEBUG: true
+      - name: Print GitHub context
+        run: |
+          echo "Repo: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
 
       - name: Trigger CodeDeploy deployment
         run: |
