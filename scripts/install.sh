@@ -1,13 +1,13 @@
 #!/bin/bash
-set -e  # fail on any error
+set -euxo pipefail
 
 cd /home/ec2-user/imagegen
 
-# Install poetry to a known location under /opt
-curl -sSL https://install.python-poetry.org | python3 - --yes --install-dir /opt/poetry
+# Install poetry into a known system-wide location
+curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 -
 
-# Make poetry available in PATH for this script
+# Add to PATH for this session
 export PATH="/opt/poetry/bin:$PATH"
 
 # Install project dependencies
-/opt/poetry/bin/poetry install --no-interaction
+poetry install --no-interaction
