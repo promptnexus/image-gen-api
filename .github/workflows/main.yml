@@ -36,7 +36,7 @@ jobs:
             --revision '{
               "revisionType": "GitHub",
               "gitHubLocation": {
-                "repository": "promptnexus/image-gen-api",
+                "repository": "${{ github.repository }}", 
                 "commitId": "${{ github.sha }}"
               }
             }'
