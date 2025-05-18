@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "INSTALL.SH RAN at $(date)" >> /home/ec2-user/imagegen/debug.log
+
 set -euxo pipefail
 
 cd /home/ec2-user/imagegen
