@@ -10,4 +10,4 @@ export PATH="/opt/poetry/bin:$PATH"
 pkill -f "python.*app/main.py" || true
 
 # Start server
-nohup PYTHONPATH=. poetry run python app/main.py > server.log 2>&1 &
+nohup poetry run python app/main.py > server.log 2>&1 &
