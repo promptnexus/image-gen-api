@@ -1,0 +1,38 @@
+name: Deploy to EC2 via CodeDeploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::248189943784:role/github-deployer-rank3
+          aws-region: us-east-1
+        env:
+          ACTIONS_STEP_DEBUG: true
+
+      - name: Trigger CodeDeploy deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name rank3 \
+            --deployment-group-name rank3-deployment-group \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Deploy from GitHub Actions on master" \
+            --revision '{
+              "revisionType": "GitHub",
+              "gitHubLocation": {
+                "repository": "promptnexus/image-gen-api",
+                "commitId": "${{ github.sha }}"
+              }
+            }'
