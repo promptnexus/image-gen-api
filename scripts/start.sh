@@ -1,13 +1,13 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
 cd /home/ec2-user/imagegen
 
-# Make poetry available
+# Ensure poetry is in path
 export PATH="/opt/poetry/bin:$PATH"
 
-# Kill old app
-pkill -f "python app/main.py" || true
+# Kill any old process
+pkill -f "python.*app/main.py" || true
 
-# Start new app
+# Start server
 nohup poetry run python app/main.py > server.log 2>&1 &
