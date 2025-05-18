@@ -1,0 +1,37 @@
+name: Deploy to EC2 via CodeDeploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  # change if your EC2 is in a different region
+
+      - name: Trigger CodeDeploy deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name rank3 \
+            --deployment-group-name rank3-deployment-group \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --description "Deploy from GitHub Actions on master" \
+            --revision '{
+              "revisionType": "GitHub",
+              "gitHubLocation": {
+                "repository": "promptnexus/image-gen-api",
+                "commitId": "${{ github.sha }}"
+              }
+            }'
