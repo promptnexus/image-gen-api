@@ -21,6 +21,7 @@ done
 # Ensure poetry is in path
 export PATH="/opt/poetry/bin:$PATH"
 
+
 # Kill any old process
 pkill -f "python.*app/main.py" || true
 
