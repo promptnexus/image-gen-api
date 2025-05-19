@@ -125,7 +125,10 @@ app.include_router(create_admin_routes(), prefix="/admin")  # Admin routes
 
 app.include_router(get_new_customer_management_router(), prefix="/customer-management")
 
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=9000, reload=True)
+    port = int(os.getenv("PORT", 9000))
+
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
