@@ -133,4 +133,11 @@ if __name__ == "__main__":
 
     reload_app = int(os.getenv("SHOULD_RELOAD", False))
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=reload_app)
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=reload_app,
+        ssl_certfile="/etc/letsencrypt/live/api.rank3.dev/fullchain.pem",
+        ssl_keyfile="/etc/letsencrypt/live/api.rank3.dev/privkey.pem",
+    )
