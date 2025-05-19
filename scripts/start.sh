@@ -9,10 +9,7 @@ cd "$APP_DIR"
 
 "$APP_DIR/scripts/setup-pb.sh"
 
-nohup "$APP_DIR/pocketbase" serve \
-  --dir /home/ec2-user/pb_data \
-  --http "0.0.0.0:8090" \
-  > /home/ec2-user/imagegen/pb.log 2>&1 &
+nohup "$APP_DIR/pocketbase" serve --dir /home/ec2-user/pb_data --http "0.0.0.0:8090" > /home/ec2-user/imagegen/pb.log 2>&1 &
 
 # fetch all under /imagegen, export as ENV_VAR=VAL
 for P in $(aws ssm get-parameters-by-path --path /imagegen --with-decryption --query "Parameters[].Name" --output text); do
