@@ -130,14 +130,22 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("PORT", 9000))
+    reload_app = int(bool(os.getenv("SHOULD_RELOAD", False)))
+    env = os.getenv("PN_IMAGE_GEN_APP_ENV", "production")
 
-    reload_app = int(os.getenv("SHOULD_RELOAD", False))
+    uvicorn_kwargs = {
+        "app": "app.main:app",
+        "host": "0.0.0.0",
+        "port": port,
+        "reload": reload_app,
+    }
 
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=port,
-        reload=reload_app,
-        ssl_certfile="/etc/letsencrypt/live/api.rank3.dev/fullchain.pem",
-        ssl_keyfile="/etc/letsencrypt/live/api.rank3.dev/privkey.pem",
-    )
+    if env != "development":
+        uvicorn_kwargs["ssl_certfile"] = (
+            "/etc/letsencrypt/live/api.rank3.dev/fullchain.pem"
+        )
+        uvicorn_kwargs["ssl_keyfile"] = (
+            "/etc/letsencrypt/live/api.rank3.dev/privkey.pem"
+        )
+
+    uvicorn.run(**uvicorn_kwargs)
