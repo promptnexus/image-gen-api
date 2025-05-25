@@ -16,6 +16,7 @@ for P in $(aws ssm get-parameters-by-path --path /imagegen --with-decryption --q
   K=${P#"/imagegen/"}                     # strip prefix
   V=$(aws ssm get-parameter --name "$P" --with-decryption --query "Parameter.Value" --output text)
   export "$K"="$V"
+  echo "exported $K=$V" >> "$APP_DIR/debug.log"
 done
 
 # Ensure poetry is in path
