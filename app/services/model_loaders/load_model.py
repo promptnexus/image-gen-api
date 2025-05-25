@@ -28,8 +28,6 @@ def display_pipeline_info(
 
 
 def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
-
-    # Call the new function
     display_pipeline_info(model_type, config)
 
     try:
@@ -43,24 +41,60 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
     print(f"Pipeline class for {model_type}: {pipeline_config.pipeline_class}")
 
     if config.device == "cuda":
-        from torch.amp import autocast
+        from rich.panel import Panel
+        from rich.console import Console
 
-        with autocast(device_type="cuda"):
-            print("Loading model with float16 precision on CUDA")
-            model = pipeline_config.pipeline_class.from_pretrained(
-                model_type.value,
-                **pipeline_config.default_params,
-                cache_dir=config.cache_dir,
-                token=config.hf_token,
-                local_files_only=True,
-                low_cpu_mem_usage=True,
-                torch_dtype=torch.float16,  # cast to float16
-                use_safetensors=True,  # ~2× faster parse vs .pt
-                # skip any remote download
-                device_map="balanced",  # 🚀 stream shards straight onto GPU
-                # streams layers instead of all at once
+        console = Console()
+
+        float_type = "float16"
+        device = config.device
+        model_name = model_type.value
+
+        # Prepare params for display
+        params = dict(pipeline_config.default_params)
+        params.update(
+            {
+                "model_name": model_name,
+                "device": device,
+                "float_type": float_type,
+                "cache_dir": config.cache_dir,
+                "token": config.hf_token,
+                "local_files_only": True,
+                "low_cpu_mem_usage": True,
+                "torch_dtype": "torch.float16",
+                "use_safetensors": True,
+                "device_map": "balanced",
+            }
+        )
+
+        # Format params for rich display
+        param_lines = [
+            f"[cyan]{k}[/cyan]: [magenta]{v}[/magenta]" for k, v in params.items()
+        ]
+        param_text = "\n".join(param_lines)
+
+        console.print(
+            Panel(
+                f"[bold yellow]Loading Model[/bold yellow]: [green]{model_name}[/green]\n"
+                f"[bold]Device:[/bold] [blue]{device}[/blue]    [bold]Float Type:[/bold] [red]{float_type}[/red]\n\n"
+                f"[bold]Parameters:[/bold]\n{param_text}",
+                title="🚀 Model Loading",
+                border_style="bright_blue",
             )
-            # .to("cuda", torch_dtype=torch.float16)
+        )
+
+        model = pipeline_config.pipeline_class.from_pretrained(
+            model_type.value,
+            **pipeline_config.default_params,
+            cache_dir=config.cache_dir,
+            token=config.hf_token,
+            local_files_only=True,  # don't download from HF
+            low_cpu_mem_usage=True,  # streams layers instead of all at once
+            torch_dtype=torch.float16,  # cast to float16
+            use_safetensors=True,  # ~2× faster parse vs .p
+            device_map="balanced",  # 🚀 stream shards straight onto GPU
+        )
+
     elif config.device == "mps":
         try:
             model = pipeline_config.pipeline_class.from_pretrained(
@@ -89,16 +123,6 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
             token=config.hf_token,
         )
 
-    # model = pipeline_config.pipeline_class.from_pretrained(
-    #     model_type.value,
-    #     **pipeline_config.default_params,
-    #     torch_dtype=(
-    #         torch.float16 if config.device in ["cuda", "mps"] else torch.float32
-    #     ),
-    #     cache_dir=config.cache_dir,
-    #     use_auth_token=config.hf_token,
-    # )
-
     if (
         hasattr(pipeline_config, "use_cpu_offload")
         and pipeline_config.use_cpu_offload
@@ -106,10 +130,6 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
         and torch.cuda.is_available()
     ):
         model.enable_model_cpu_offload()
-    # else:
-    #     if config.device == "cpu":
-    #         print("Setting CPU-specific optimizations...")
-    #         torch.set_num_threads(num_cores)
 
     model = model.to(config.device)
     return model

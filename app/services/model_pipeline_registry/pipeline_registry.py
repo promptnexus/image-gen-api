@@ -59,11 +59,23 @@ class PipelineRegistry:
             ModelType.FLUX_1_SCHNELL,
             PipelineConfig(
                 pipeline_class=FluxPipeline,
+<<<<<<< HEAD
                 default_params={
                     "tokenizer_kwargs": {"use_fast": False},
                     # "tokenizer": CLIPTokenizerFast,
                     # "torch_dtype": torch.float16,  # Use half precision
                 },
+=======
+<<<<<<< Updated upstream
+                default_params={},
+=======
+                default_params={
+                    "tokenizer_kwargs": {"use_fast": False, "add_prefix_space": False},
+                    # "tokenizer": CLIPTokenizerFast,
+                    # "torch_dtype": torch.float16,  # Use half precision
+                },
+>>>>>>> Stashed changes
+>>>>>>> 7161d9a (fix)
                 inference_params={
                     "height": 512,
                     "width": 512,
