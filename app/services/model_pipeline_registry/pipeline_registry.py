@@ -12,6 +12,8 @@ from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline i
 
 from transformers import CLIPTokenizerFast
 
+import torch
+
 
 class PipelineRegistry:
     _registry: Dict[ModelType, PipelineConfig] = {}
@@ -57,11 +59,13 @@ class PipelineRegistry:
             ModelType.FLUX_1_SCHNELL,
             PipelineConfig(
                 pipeline_class=FluxPipeline,
-                default_params={},
-                inference_params={
+                default_params={
                     "tokenizer": CLIPTokenizerFast,
-                    "height": 1024,
-                    "width": 1024,
+                    "torch_dtype": torch.float16,  # Use half precision
+                },
+                inference_params={
+                    "height": 512,
+                    "width": 512,
                     "guidance_scale": 3.5,
                     "num_inference_steps": 50,
                     "max_sequence_length": 512,
