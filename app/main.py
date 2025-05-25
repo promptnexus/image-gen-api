@@ -129,7 +129,7 @@ app.include_router(get_new_customer_management_router(), prefix="/customer-manag
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("PORT", 9000))
+    port = int(os.getenv("PORT", 443))
     reload_app = int(bool(os.getenv("SHOULD_RELOAD", False)))
     env = os.getenv("PN_IMAGE_GEN_APP_ENV", "production")
 
