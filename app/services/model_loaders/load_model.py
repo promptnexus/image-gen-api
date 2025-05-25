@@ -52,8 +52,8 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
                 **pipeline_config.default_params,
                 cache_dir=config.cache_dir,
                 token=config.hf_token,
+                local_files_only=True
                 low_cpu_mem_usage=True,  # streams layers instead of all at once
-                # device_map="auto",
             ).to("cuda", torch_dtype=torch.float16)
     elif config.device == "mps":
         try:
