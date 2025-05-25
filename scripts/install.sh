@@ -11,5 +11,7 @@ curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 -
 # Add to PATH for this session
 export PATH="/opt/poetry/bin:$PATH"
 
+npm install -g spectaql
+
 # Install project dependencies
 poetry install --no-interaction
