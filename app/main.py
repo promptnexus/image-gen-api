@@ -148,4 +148,4 @@ if __name__ == "__main__":
             "/etc/letsencrypt/live/api.rank3.dev/privkey.pem"
         )
 
-    uvicorn.run(**uvicorn_kwargs)
+    uvicorn.run(**uvicorn_kwargs, workers=4)
