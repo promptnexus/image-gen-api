@@ -10,6 +10,8 @@ from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline i
     DeepFloydCombinedPipeline,
 )
 
+from transformers import CLIPTokenizerFast
+
 
 class PipelineRegistry:
     _registry: Dict[ModelType, PipelineConfig] = {}
@@ -57,6 +59,7 @@ class PipelineRegistry:
                 pipeline_class=FluxPipeline,
                 default_params={},
                 inference_params={
+                    "tokenizer": CLIPTokenizerFast,
                     "height": 1024,
                     "width": 1024,
                     "guidance_scale": 3.5,
