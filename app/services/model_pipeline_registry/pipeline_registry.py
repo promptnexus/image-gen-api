@@ -10,10 +10,6 @@ from app.services.model_pipeline_registry.custom_pipelines.deep_floyd_pipeline i
     DeepFloydCombinedPipeline,
 )
 
-from transformers import CLIPTokenizerFast
-
-import torch
-
 
 class PipelineRegistry:
     _registry: Dict[ModelType, PipelineConfig] = {}
@@ -60,7 +56,7 @@ class PipelineRegistry:
             PipelineConfig(
                 pipeline_class=FluxPipeline,
                 default_params={
-                    "tokenizer_kwargs": {"use_fast": False},
+                    "tokenizer_kwargs": {"use_fast": False, "add_prefix_space": False},
                     # "tokenizer": CLIPTokenizerFast,
                     # "torch_dtype": torch.float16,  # Use half precision
                 },
