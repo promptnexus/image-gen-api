@@ -46,13 +46,13 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
         from torch.amp import autocast
 
         with autocast(device_type="cuda"):
+            print("Loading model with float16 precision on CUDA")
             model = pipeline_config.pipeline_class.from_pretrained(
                 model_type.value,
                 **pipeline_config.default_params,
-                torch_dtype=torch.float16,
                 cache_dir=config.cache_dir,
-                use_auth_token=config.hf_token,
-            )
+                token=config.hf_token,
+            ).to("cuda", torch_dtype=torch.float16)
     elif config.device == "mps":
         try:
             model = pipeline_config.pipeline_class.from_pretrained(
@@ -60,7 +60,7 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
                 **pipeline_config.default_params,
                 torch_dtype=torch.float16,
                 cache_dir=config.cache_dir,
-                use_auth_token=config.hf_token,
+                token=config.hf_token,
             )
         except RuntimeError as e:
             # Fallback to float32 if float16 fails on MPS
@@ -70,7 +70,7 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
                 **pipeline_config.default_params,
                 torch_dtype=torch.float32,
                 cache_dir=config.cache_dir,
-                use_auth_token=config.hf_token,
+                token=config.hf_token,
             )
     else:
         model = pipeline_config.pipeline_class.from_pretrained(
@@ -78,7 +78,7 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
             **pipeline_config.default_params,
             torch_dtype=torch.float32,
             cache_dir=config.cache_dir,
-            use_auth_token=config.hf_token,
+            token=config.hf_token,
         )
 
     # model = pipeline_config.pipeline_class.from_pretrained(
