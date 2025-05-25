@@ -25,7 +25,6 @@ export PATH="/opt/poetry/bin:$PATH"
 # Kill any old process
 pkill -f "python.*app/main.py" || true
 
-# > server.log 2>&1
 
 # Start server
-nohup poetry run python app/main.py &
+nohup poetry run python app/main.py > "$APP_DIR/server.log" 2>&1 &
