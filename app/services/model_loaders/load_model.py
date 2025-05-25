@@ -93,7 +93,14 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
             torch_dtype=torch.float16,  # cast to float16
             use_safetensors=True,  # ~2× faster parse vs .p
             device_map="balanced",  # 🚀 stream shards straight onto GPU
+            # offload_folder="offload",
+            # offload_state_dict=True,
         )
+
+        model.vae.enable_slicing()
+        model.vae.enable_tiling()
+        model.enable_attention_slicing()
+        model.enable_sequential_cpu_offload()
 
     elif config.device == "mps":
         try:
