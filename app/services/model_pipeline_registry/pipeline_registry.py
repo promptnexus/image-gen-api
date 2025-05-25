@@ -51,6 +51,21 @@ class PipelineRegistry:
             ),
         )
 
+        cls.register(
+            ModelType.FLUX_1_SCHNELL,
+            PipelineConfig(
+                pipeline_class=FluxPipeline,
+                default_params={},
+                inference_params={
+                    "height": 1024,
+                    "width": 1024,
+                    "guidance_scale": 3.5,
+                    "num_inference_steps": 50,
+                    "max_sequence_length": 512,
+                },
+            ),
+        )
+
         # Register other Stable Diffusion pipelines
         cls.register(
             ModelType.STABLE_V1_5,
