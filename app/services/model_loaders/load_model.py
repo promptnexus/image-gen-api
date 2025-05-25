@@ -53,8 +53,14 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
                 cache_dir=config.cache_dir,
                 token=config.hf_token,
                 local_files_only=True,
-                low_cpu_mem_usage=True,  # streams layers instead of all at once
-            ).to("cuda", torch_dtype=torch.float16)
+                low_cpu_mem_usage=True,
+                torch_dtype=torch.float16,  # cast to float16
+                use_safetensors=True,  # ~2× faster parse vs .pt
+                # skip any remote download
+                device_map="auto",  # 🚀 stream shards straight onto GPU
+                # streams layers instead of all at once
+            )
+            # .to("cuda", torch_dtype=torch.float16)
     elif config.device == "mps":
         try:
             model = pipeline_config.pipeline_class.from_pretrained(
