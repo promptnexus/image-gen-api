@@ -61,7 +61,7 @@ class PipelineRegistry:
                 pipeline_class=FluxPipeline,
                 default_params={
                     "tokenizer": CLIPTokenizerFast,
-                    "torch_dtype": torch.float16,  # Use half precision
+                    # "torch_dtype": torch.float16,  # Use half precision
                 },
                 inference_params={
                     "height": 512,
