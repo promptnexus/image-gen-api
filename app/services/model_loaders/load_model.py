@@ -57,7 +57,7 @@ def load_model(model_type: ModelType, config: GeneratorServiceConfig) -> Any:
                 torch_dtype=torch.float16,  # cast to float16
                 use_safetensors=True,  # ~2× faster parse vs .pt
                 # skip any remote download
-                device_map="auto",  # 🚀 stream shards straight onto GPU
+                device_map="balanced",  # 🚀 stream shards straight onto GPU
                 # streams layers instead of all at once
             )
             # .to("cuda", torch_dtype=torch.float16)
